@@ -486,24 +486,26 @@ impl CompressionConfig {
         let a_8 = extras[4];
         let a_9 = extras[5];
         // Decompose `A,B,C,D` words into (28, 6, 5, 25)-bit chunks.
-        // Decompose `A,B,C,D` words into (2, 11, 9, 10)-bit chunks.
-        // `c` is split into (3, 3, 3)-bit c_lo, c_mid, c_hi.
+        // `b` is split into (3,3)-bit b_lo and b_hi.
+        // `c` is split into (2,3)-bit c_lo and c_hi.
         meta.create_gate("decompose ABCD", |meta| {
             let s_decompose_abcd = meta.query_selector(s_decompose_abcd);
-            let a = meta.query_advice(a_3, Rotation::next()); // 2-bit chunk
-            let spread_a = meta.query_advice(a_4, Rotation::next());
-            let b = meta.query_advice(a_1, Rotation::cur()); // 11-bit chunk
-            let spread_b = meta.query_advice(a_2, Rotation::cur());
-            let tag_b = meta.query_advice(a_0, Rotation::cur());
-            let c_lo = meta.query_advice(a_3, Rotation::cur()); // 3-bit chunk
-            let spread_c_lo = meta.query_advice(a_4, Rotation::cur());
-            let c_mid = meta.query_advice(a_5, Rotation::cur()); // 3-bit chunk
-            let spread_c_mid = meta.query_advice(a_6, Rotation::cur());
+            let a = meta.query_advice(a_1, Rotation::next()); // 28-bit chunk
+            let spread_a = meta.query_advice(a_2, Rotation::next());
+            let tag_a = meta.query_advice(a_0, Rotation::next());
+            let b_lo = meta.query_advice(a_3, Rotation::cur()); // 3-bit chunk
+            let spread_b_lo = meta.query_advice(a_4, Rotation::cur());
+            let b_hi = meta.query_advice(a_5, Rotation::cur()); //3-bit chunk
+            let spread_b_hi = meta.query_advice(a_6,Rotation::cur());
+            let c_lo = meta.query_advice(a_3, Rotation::next()); // 2-bit chunk
+            let spread_c_lo = meta.query_advice(a_4, Rotation::next());
+            // let c_mid = meta.query_advice(a_5, Rotation::cur()); // 3-bit chunk
+            // let spread_c_mid = meta.query_advice(a_6, Rotation::cur());
             let c_hi = meta.query_advice(a_5, Rotation::next()); // 3-bit chunk
             let spread_c_hi = meta.query_advice(a_6, Rotation::next());
-            let d = meta.query_advice(a_1, Rotation::next()); // 7-bit chunk
-            let spread_d = meta.query_advice(a_2, Rotation::next());
-            let tag_d = meta.query_advice(a_0, Rotation::next());
+            let d = meta.query_advice(a_1, Rotation::cur()); // 25-bit chunk
+            let spread_d = meta.query_advice(a_2, Rotation::cur());
+            let tag_d = meta.query_advice(a_0, Rotation::cur());
             let word_lo = meta.query_advice(a_7, Rotation::cur());
             let spread_word_lo = meta.query_advice(a_8, Rotation::cur());
             let word_hi = meta.query_advice(a_7, Rotation::next());
@@ -513,13 +515,12 @@ impl CompressionConfig {
                 s_decompose_abcd,
                 a,
                 spread_a,
-                b,
-                spread_b,
-                tag_b,
+                b_lo,
+                spread_b_lo,
+                b_hi,
+                spread_b_hi,
                 c_lo,
                 spread_c_lo,
-                c_mid,
-                spread_c_mid,
                 c_hi,
                 spread_c_hi,
                 d,
@@ -531,26 +532,25 @@ impl CompressionConfig {
                 spread_word_hi,
             )
         });
-
-        // Decompose `E,F,G,H` words into (6, 5, 14, 7)-bit chunks.
-        // `a` is split into (3, 3)-bit a_lo, a_hi
-        // `b` is split into (2, 3)-bit b_lo, b_hi
+        // Decompose `E,F,G,H` words into (14, 4, 23, 23)-bit chunks.
+        // `b` is split into (2, 2)-bit b_lo, b_hi
         meta.create_gate("Decompose EFGH", |meta| {
             let s_decompose_efgh = meta.query_selector(s_decompose_efgh);
-            let a_lo = meta.query_advice(a_3, Rotation::next()); // 3-bit chunk
-            let spread_a_lo = meta.query_advice(a_4, Rotation::next());
-            let a_hi = meta.query_advice(a_5, Rotation::next()); // 3-bit chunk
-            let spread_a_hi = meta.query_advice(a_6, Rotation::next());
-            let b_lo = meta.query_advice(a_3, Rotation::cur()); // 2-bit chunk
-            let spread_b_lo = meta.query_advice(a_4, Rotation::cur());
-            let b_hi = meta.query_advice(a_5, Rotation::cur()); // 3-bit chunk
-            let spread_b_hi = meta.query_advice(a_6, Rotation::cur());
-            let c = meta.query_advice(a_1, Rotation::next()); // 14-bit chunk
-            let spread_c = meta.query_advice(a_2, Rotation::next());
-            let tag_c = meta.query_advice(a_0, Rotation::next());
-            let d = meta.query_advice(a_1, Rotation::cur()); // 7-bit chunk
-            let spread_d = meta.query_advice(a_2, Rotation::cur());
-            let tag_d = meta.query_advice(a_0, Rotation::cur());
+            let a = meta.query_advice(a_1, Rotation::prev()); // 14-bit chunk
+            let spread_a = meta.query_advice(a_2, Rotation::prev());
+            let tag_a = meta.query_advice(a_0,Rotation::prev());
+            // let a_hi = meta.query_advice(a_5, Rotation::next()); // 3-bit chunk
+            // let spread_a_hi = meta.query_advice(a_6, Rotation::next());
+            let b_lo = meta.query_advice(a_3, Rotation::prev()); // 2-bit chunk
+            let spread_b_lo = meta.query_advice(a_4, Rotation::prev());
+            let b_hi = meta.query_advice(a_3, Rotation::cur()); // 2-bit chunk
+            let spread_b_hi = meta.query_advice(a_4, Rotation::cur());
+            let c = meta.query_advice(a_1, Rotation::cur()); // 23-bit chunk
+            let spread_c = meta.query_advice(a_2, Rotation::cur());
+            let tag_c = meta.query_advice(a_0, Rotation::cur());
+            let d = meta.query_advice(a_1, Rotation::next()); // 23-bit chunk
+            let spread_d = meta.query_advice(a_2, Rotation::next());
+            let tag_d = meta.query_advice(a_0, Rotation::next());
             let word_lo = meta.query_advice(a_7, Rotation::cur());
             let spread_word_lo = meta.query_advice(a_8, Rotation::cur());
             let word_hi = meta.query_advice(a_7, Rotation::next());
@@ -558,10 +558,9 @@ impl CompressionConfig {
 
             CompressionGate::s_decompose_efgh(
                 s_decompose_efgh,
-                a_lo,
-                spread_a_lo,
-                a_hi,
-                spread_a_hi,
+                a,
+                spread_a,
+                tag_a,
                 b_lo,
                 spread_b_lo,
                 b_hi,
@@ -580,7 +579,7 @@ impl CompressionConfig {
         });
 
         // s_upper_sigma_0 on abcd words
-        // (2, 11, 9, 10)-bit chunks
+        // (28, 6, 5, 25)-bit chunks
         meta.create_gate("s_upper_sigma_0", |meta| {
             let s_upper_sigma_0 = meta.query_selector(s_upper_sigma_0);
             let spread_r0_even = meta.query_advice(a_2, Rotation::prev());
@@ -589,9 +588,10 @@ impl CompressionConfig {
             let spread_r1_odd = meta.query_advice(a_3, Rotation::cur());
 
             let spread_a = meta.query_advice(a_3, Rotation::next());
-            let spread_b = meta.query_advice(a_5, Rotation::cur());
+            let spread_b_lo = meta.query_advice(a_5, Rotation::prev());
+            let spread_b_hi = meta.query_advice(a_5, Rotation::cur());
             let spread_c_lo = meta.query_advice(a_3, Rotation::prev());
-            let spread_c_mid = meta.query_advice(a_4, Rotation::prev());
+            // let spread_c_mid = meta.query_advice(a_4, Rotation::prev());
             let spread_c_hi = meta.query_advice(a_4, Rotation::next());
             let spread_d = meta.query_advice(a_4, Rotation::cur());
 
@@ -602,24 +602,25 @@ impl CompressionConfig {
                 spread_r1_even,
                 spread_r1_odd,
                 spread_a,
-                spread_b,
+                spread_b_lo,
+                spread_b_hi,
                 spread_c_lo,
-                spread_c_mid,
                 spread_c_hi,
                 spread_d,
             )
         });
 
         // s_upper_sigma_1 on efgh words
-        // (6, 5, 14, 7)-bit chunks
+        // (14, 4, 23, 23)-bit chunks
         meta.create_gate("s_upper_sigma_1", |meta| {
             let s_upper_sigma_1 = meta.query_selector(s_upper_sigma_1);
             let spread_r0_even = meta.query_advice(a_2, Rotation::prev());
             let spread_r0_odd = meta.query_advice(a_2, Rotation::cur());
             let spread_r1_even = meta.query_advice(a_2, Rotation::next());
             let spread_r1_odd = meta.query_advice(a_3, Rotation::cur());
-            let spread_a_lo = meta.query_advice(a_3, Rotation::next());
-            let spread_a_hi = meta.query_advice(a_4, Rotation::next());
+
+            let spread_a = meta.query_advice(a_3, Rotation::next());
+            // let spread_a_hi = meta.query_advice(a_4, Rotation::next());
             let spread_b_lo = meta.query_advice(a_3, Rotation::prev());
             let spread_b_hi = meta.query_advice(a_4, Rotation::prev());
             let spread_c = meta.query_advice(a_5, Rotation::cur());
@@ -631,8 +632,7 @@ impl CompressionConfig {
                 spread_r0_odd,
                 spread_r1_even,
                 spread_r1_odd,
-                spread_a_lo,
-                spread_a_hi,
+                spread_a,
                 spread_b_lo,
                 spread_b_hi,
                 spread_c,
@@ -854,12 +854,12 @@ impl CompressionConfig {
         }
     }
 
-    /// Initialize compression with a constant Initialization Vector of 32-byte words.
+    /// Initialize compression with a constant Initialization Vector of 64-byte words.
     /// Returns an initialized state.
     pub(super) fn initialize_with_iv(
         &self,
         layouter: &mut impl Layouter<pallas::Base>,
-        init_state: [u32; STATE],
+        init_state: [u64; STATE],
     ) -> Result<State, Error> {
         let mut new_state = State::empty_state();
         layouter.assign_region(
@@ -890,12 +890,12 @@ impl CompressionConfig {
         Ok(new_state)
     }
 
-    /// Given an initialized state and a message schedule, perform 64 compression rounds.
+    /// Given an initialized state and a message schedule, perform 80 compression rounds.
     pub(super) fn compress(
         &self,
         layouter: &mut impl Layouter<pallas::Base>,
         initialized_state: State,
-        w_halves: [(AssignedBits<16>, AssignedBits<16>); ROUNDS],
+        w_halves: [(AssignedBits<32>, AssignedBits<32>); ROUNDS],
     ) -> Result<State, Error> {
         let mut state = State::empty_state();
         layouter.assign_region(
