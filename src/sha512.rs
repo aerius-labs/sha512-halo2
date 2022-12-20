@@ -8,9 +8,9 @@ use halo2_proofs::{
     plonk::Error,
 };
 
-mod table32;
+mod table64;
 
-pub use table32::{BlockWord, Table32Chip, Table32Config};
+pub use table64::{BlockWord, Table64Chip, Table64Config};
 
 /// The size of a SHA-512 block, in 64-bit words.
 pub const BLOCK_SIZE: usize = 16;

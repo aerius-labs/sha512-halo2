@@ -1,7 +1,7 @@
 use super::{
     super::DIGEST_SIZE,
     util::{i2lebsp, lebs2ip},
-    AssignedBits, BlockWord, SpreadInputs, SpreadVar, Table16Assignment, ROUNDS, STATE,
+    AssignedBits, BlockWord, SpreadInputs, SpreadVar, Table64Assignment, ROUNDS, STATE,
 };
 
 use halo2_proofs::{
@@ -448,7 +448,7 @@ pub(super) struct CompressionConfig {
     s_digest: Selector,
 }
 
-impl Table32Assignment for CompressionConfig {}
+impl Table64Assignment for CompressionConfig {}
 
 impl CompressionConfig {
     pub(super) fn configure(

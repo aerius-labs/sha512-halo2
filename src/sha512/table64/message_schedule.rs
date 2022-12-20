@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use super::{super::BLOCK_SIZE, AssignedBits, BlockWord, SpreadInputs, Table16Assignment, ROUNDS};
+use super::{super::BLOCK_SIZE, AssignedBits, BlockWord, SpreadInputs, Table64Assignment, ROUNDS};
 use halo2_proofs::{
     circuit::Layouter,
     pasta::pallas,
@@ -57,7 +57,7 @@ pub(super) struct MessageScheduleConfig {
     s_lower_sigma_1_v2: Selector,
 }
 
-impl Table32Assignment for MessageScheduleConfig {}
+impl Table64Assignment for MessageScheduleConfig {}
 
 impl MessageScheduleConfig {
     /// Configures the message schedule.
@@ -400,7 +400,7 @@ impl MessageScheduleConfig {
 #[cfg(test)]
 mod tests {
     use super::super::{
-        super::BLOCK_SIZE, util::lebs2ip, BlockWord, SpreadTableChip, Table32Chip, Table32Config,
+        super::BLOCK_SIZE, util::lebs2ip, BlockWord, SpreadTableChip, Table64Chip, Table64Config,
     };
     use super::schedule_util::*;
     use halo2_proofs::{
@@ -415,7 +415,7 @@ mod tests {
         struct MyCircuit {}
 
         impl Circuit<pallas::Base> for MyCircuit {
-            type Config = Table32Config;
+            type Config = Table64Config;
             type FloorPlanner = SimpleFloorPlanner;
 
             fn without_witnesses(&self) -> Self {
@@ -423,7 +423,7 @@ mod tests {
             }
 
             fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
-                Table32Chip::configure(meta)
+                Table64Chip::configure(meta)
             }
 
             fn synthesize(
@@ -452,7 +452,7 @@ mod tests {
 
         let circuit: MyCircuit = MyCircuit {};
 
-        let prover = match MockProver::<pallas::Base>::run(33, &circuit, vec![]) {
+        let prover = match MockProver::<pallas::Base>::run(65, &circuit, vec![]) {
             Ok(prover) => prover,
             Err(e) => panic!("{:?}", e),
         };
