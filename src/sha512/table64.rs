@@ -125,6 +125,16 @@ impl From<u64> for Bits<64> {
     fn from(int: u64) -> Bits<64> {
         Bits(i2lebsp::<64>(int.into()))
     }
+}    
+impl From<&Bits<128>> for u128 {
+    fn from(bits: &Bits<128>) -> u128 {
+        lebs2ip(&bits.0) as u128
+    }
+}
+impl From<u128> for Bits<128> {
+    fn from(int: u128) -> Bits<128> {
+        Bits(i2lebsp::<128>(int.into()))
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -273,6 +283,40 @@ impl AssignedBits<64> {
     }
 }
 
+impl AssignedBits<128> {
+    fn value_u128(&self) -> Value<u128> {
+        self.value().map(|v| v.into())
+    }
+    fn assign<A, AR>(
+        region: &mut Region<'_, pallas::Base>,
+        annotation: A,
+        column: impl Into<Column<Any>>,
+        offset: usize,
+        value: Value<u128>,
+    ) -> Result<Self, Error>
+    where
+        A: Fn() -> AR,
+        AR: Into<String>,
+    {
+        let column: Column<Any> = column.into();
+        let value: Value<Bits<128>> = value.map(|v| v.into());
+        match column.column_type() {
+            Any::Advice => {
+                region.assign_advice(annotation, column.try_into().unwrap(), offset, || {
+                    value.clone()
+                })
+            }
+            Any::Fixed => {
+                region.assign_fixed(annotation, column.try_into().unwrap(), offset, || {
+                    value.clone()
+                })
+            }
+            _ => panic!("Cannot assign to instance column"),
+        }
+        .map(AssignedBits)
+    }
+}
+
 /// Configuration for a [`Table64Chip`].
 #[derive(Clone, Debug)]
 pub struct Table64Config {
@@ -299,6 +343,7 @@ impl Chip<pallas::Base> for Table64Chip {
         &()
     }
 }
+
 
 impl Table64Chip {
     /// Reconstructs this chip from the given config.
@@ -430,14 +475,14 @@ trait Table64Assignment {
         lookup: &SpreadInputs,
         a_3: Column<Advice>,
         row: usize,
-        r_0_even: Value<[bool; 32]>,
-        r_0_odd: Value<[bool; 32]>,
-        r_1_even: Value<[bool; 32]>,
-        r_1_odd: Value<[bool; 32]>,
+        r_0_even: Value<[bool; 64]>,
+        r_0_odd: Value<[bool; 64]>,
+        r_1_even: Value<[bool; 64]>,
+        r_1_odd: Value<[bool; 64]>,
     ) -> Result<
         (
-            (AssignedBits<32>, AssignedBits<32>),
-            (AssignedBits<32>, AssignedBits<32>),
+            (AssignedBits<64>, AssignedBits<64>),
+            (AssignedBits<64>, AssignedBits<64>),
         ),
         Error,
     > {
@@ -446,25 +491,25 @@ trait Table64Assignment {
             region,
             lookup,
             row - 1,
-            r_0_even.map(SpreadWord::<32, 64>::new),
+            r_0_even.map(SpreadWord::<64, 128>::new),
         )?;
         let r_0_odd =  SpreadVar::with_lookup(
             region,
             lookup,
             row,
-            r_0_odd.map(SpreadWord::<32, 64>::new),
+            r_0_odd.map(SpreadWord::<64, 128>::new),
         )?;
         let r_1_even = SpreadVar::with_lookup(
             region,
             lookup,
             row + 1,
-            r_1_even.map(SpreadWord::<32, 64>::new),
+            r_1_even.map(SpreadWord::<64, 128>::new),
         )?;
         let r_1_odd = SpreadVar::with_lookup(
             region,
             lookup,
             row + 2,
-            r_1_odd.map(SpreadWord::<32, 64>::new),
+            r_1_odd.map(SpreadWord::<64, 128>::new),
         )?;
 
         // Assign and copy R_1^{odd}
@@ -486,11 +531,11 @@ trait Table64Assignment {
         lookup: &SpreadInputs,
         a_3: Column<Advice>,
         row: usize,
-        r_0_even: Value<[bool; 32]>,
-        r_0_odd: Value<[bool; 32]>,
-        r_1_even: Value<[bool; 32]>,
-        r_1_odd: Value<[bool; 32]>,
-    ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
+        r_0_even: Value<[bool; 64]>,
+        r_0_odd: Value<[bool; 64]>,
+        r_1_even: Value<[bool; 64]>,
+        r_1_odd: Value<[bool; 64]>,
+    ) -> Result<(AssignedBits<64>, AssignedBits<64>), Error> {
         let (even, _odd) = self.assign_spread_outputs(
             region, lookup, a_3, row, r_0_even, r_0_odd, r_1_even, r_1_odd,
         )?;
