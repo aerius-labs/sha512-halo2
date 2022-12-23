@@ -9,7 +9,7 @@ impl CompressionConfig {
         region: &mut Region<'_, pallas::Base>,
         round_idx: MainRoundIdx,
         state: State,
-        schedule_word: &(AssignedBits<16>, AssignedBits<16>),
+        schedule_word: &(AssignedBits<32>, AssignedBits<32>),
     ) -> Result<State, Error> {
         let a_3 = self.extras[0];
         let a_4 = self.extras[1];
@@ -66,7 +66,7 @@ impl CompressionConfig {
         let a_new_dense = self.assign_a_new(region, round_idx, maj, sigma_0, h_prime)?;
         let a_new_val = a_new_dense.value();
 
-        if round_idx < 63.into() {
+        if round_idx < 79.into() {
             // Assign and copy A_new
             let a_new_row = get_decompose_a_row((round_idx + 1).into());
             a_new_dense
@@ -85,10 +85,10 @@ impl CompressionConfig {
                 .1
                 .copy_advice(|| "e_new_hi", region, a_7, e_new_row + 1)?;
 
-            // Decompose A into (2, 11, 9, 10)-bit chunks
+            // Decompose A into (28, 6, 5, 25)-bit chunks
             let a_new = self.decompose_a(region, (round_idx + 1).into(), a_new_val)?;
 
-            // Decompose E into (6, 5, 14, 7)-bit chunks
+            // Decompose E into (14, 4, 23, 23)-bit chunks
             let e_new = self.decompose_e(region, (round_idx + 1).into(), e_new_val)?;
 
             Ok(State::new(
