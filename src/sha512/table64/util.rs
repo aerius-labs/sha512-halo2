@@ -1,7 +1,7 @@
 
 use halo2_proofs::circuit::Value;
 
-pub const MASK_EVEN_32: u32 = 0x55555555;
+pub const MASK_EVEN_64: u64= 0x5555555555555555;
 
 /// The sequence of bits representing a u128 in little-endian order.
 ///
