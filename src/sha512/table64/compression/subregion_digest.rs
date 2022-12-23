@@ -39,7 +39,7 @@ impl CompressionConfig {
             || "a",
             a_5,
             abcd_row,
-            || a.map(|a| pallas::Base::from(a as u64)),
+            || a.map(|a| pallas::Base::from(a as u128)),
         )?;
 
         let b = self.assign_digest_word(region, abcd_row, a_6, a_7, a_8, b.dense_halves)?;
@@ -58,7 +58,7 @@ impl CompressionConfig {
             || "e",
             a_5,
             efgh_row,
-            || e.map(|e| pallas::Base::from(e as u64)),
+            || e.map(|e| pallas::Base::from(e as u128)),
         )?;
 
         let f = self.assign_digest_word(region, efgh_row, a_6, a_7, a_8, f.dense_halves)?;
@@ -94,7 +94,7 @@ impl CompressionConfig {
             || "word",
             word_col,
             row,
-            || val.map(|val| pallas::Base::from(val as u64)),
+            || val.map(|val| pallas::Base::from(val as u128)),
         )?;
 
         Ok(val)
