@@ -11,11 +11,11 @@ impl CompressionConfig {
     pub fn initialize_iv(
         &self,
         region: &mut Region<'_, pallas::Base>,
-        iv: [u32; STATE],
+        iv: [u64; STATE],
     ) -> Result<State, Error> {
         let a_7 = self.extras[3];
 
-        // Decompose E into (6, 5, 14, 7)-bit chunks
+        // Decompose E into (14, 4, 23, 23)-bit chunks
         let e = self.decompose_e(region, RoundIdx::Init, Value::known(iv[4]))?;
 
         // Decompose F, G
@@ -27,7 +27,7 @@ impl CompressionConfig {
         let h =
             self.assign_word_halves_dense(region, h_row, a_7, h_row + 1, a_7, Value::known(iv[7]))?;
 
-        // Decompose A into (2, 11, 9, 10)-bit chunks
+        // Decompose A into (28, 6, 5, 25)-bit chunks
         let a = self.decompose_a(region, RoundIdx::Init, Value::known(iv[0]))?;
 
         // Decompose B, C
@@ -60,7 +60,7 @@ impl CompressionConfig {
         let a_7 = self.extras[3];
         let (a, b, c, d, e, f, g, h) = match_state(state);
 
-        // Decompose E into (6, 5, 14, 7)-bit chunks
+        // Decompose E into (14, 4, 23, 23)-bit chunks
         let e = e.dense_halves.value();
         let e = self.decompose_e(region, RoundIdx::Init, e)?;
 
@@ -75,7 +75,7 @@ impl CompressionConfig {
         let h_row = get_h_row(RoundIdx::Init);
         let h = self.assign_word_halves_dense(region, h_row, a_7, h_row + 1, a_7, h)?;
 
-        // Decompose A into (2, 11, 9, 10)-bit chunks
+        // Decompose A into (28, 6, 5, 25)-bit chunks
         let a = a.dense_halves.value();
         let a = self.decompose_a(region, RoundIdx::Init, a)?;
 
@@ -106,7 +106,7 @@ impl CompressionConfig {
         &self,
         region: &mut Region<'_, pallas::Base>,
         round_idx: InitialRound,
-        b_val: Value<u32>,
+        b_val: Value<u64>,
     ) -> Result<RoundWord, Error> {
         let row = get_decompose_b_row(round_idx);
 
@@ -119,7 +119,7 @@ impl CompressionConfig {
         &self,
         region: &mut Region<'_, pallas::Base>,
         round_idx: InitialRound,
-        c_val: Value<u32>,
+        c_val: Value<u64>,
     ) -> Result<RoundWord, Error> {
         let row = get_decompose_c_row(round_idx);
 
@@ -132,7 +132,7 @@ impl CompressionConfig {
         &self,
         region: &mut Region<'_, pallas::Base>,
         round_idx: InitialRound,
-        f_val: Value<u32>,
+        f_val: Value<u64>,
     ) -> Result<RoundWord, Error> {
         let row = get_decompose_f_row(round_idx);
 
@@ -145,7 +145,7 @@ impl CompressionConfig {
         &self,
         region: &mut Region<'_, pallas::Base>,
         round_idx: InitialRound,
-        g_val: Value<u32>,
+        g_val: Value<u64>,
     ) -> Result<RoundWord, Error> {
         let row = get_decompose_g_row(round_idx);
 
