@@ -148,7 +148,7 @@ impl MessageScheduleConfig {
     }
 
     // sigma_0 v1 on a word in W_1 to W_13
-    // (3, 4, 11, 14)-bit chunks
+    // (1, 6, 1, 56)-bit chunks
     fn lower_sigma_0(
         &self,
         region: &mut Region<'_, pallas::Base>,
