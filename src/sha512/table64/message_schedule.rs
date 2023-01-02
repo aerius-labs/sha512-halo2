@@ -175,7 +175,7 @@ impl MessageScheduleConfig {
             // let tag_g = meta.query_advice(a_0, Rotation::prev());
             let word = meta.query_advice(a_5, Rotation::cur());
 
-            ScheduleGate::s_decompose_2(s_decompose_2, a, b, c, d, e, tag_e, f, tag_f, g, tag_g, word)
+            ScheduleGate::s_decompose_2(s_decompose_2, a, b, c, d, e, tag_e, f, tag_f, g, word)
         });
 
         // s_decompose_3 for W_65 to W_77
