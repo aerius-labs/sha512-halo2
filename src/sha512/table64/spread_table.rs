@@ -10,18 +10,18 @@ use halo2_proofs::{
 use std::convert::TryInto;
 use std::marker::PhantomData;
 
-const BITS_11: usize = 1 << 11;
-const BITS_13: usize = 1 << 13;
-const BITS_14: usize = 1 << 14;
-const BITS_23: usize = 1 << 23;
-const BITS_25: usize = 1 << 25;
-const BITS_28: usize = 1 << 28;
-const BITS_42: usize = 1 << 42;
-const BITS_56: usize = 1 << 56;
+const BITS_11: u64 = 1 << 11;
+const BITS_13: u64 = 1 << 13;
+const BITS_14: u64 = 1 << 14;
+const BITS_23: u64 = 1 << 23;
+const BITS_25: u64 = 1 << 25;
+const BITS_28: u64 = 1 << 28;
+const BITS_42: u64 = 1 << 42;
+const BITS_56: u64 = 1 << 56;
 
 /// An input word into a lookup, containing (tag, dense, spread)
 #[derive(Copy, Clone, Debug)]
-pub(super) struct SpreadWord<const DENSE: u64, const SPREAD: u128> {
+pub(super) struct SpreadWord<const DENSE: usize, const SPREAD: usize> {
     pub tag: u8,
     pub dense: [bool; DENSE],
     pub spread: [bool; SPREAD],
@@ -51,7 +51,7 @@ pub fn get_tag(input: u64) -> u8 {
     }
 }
 
-impl<const DENSE: u64, const SPREAD: u128> SpreadWord<DENSE, SPREAD> {
+impl<const DENSE: usize, const SPREAD: usize> SpreadWord<DENSE, SPREAD> {
     pub(super) fn new(dense: [bool; DENSE]) -> Self {
         assert!(DENSE <= 64);
         SpreadWord {
@@ -77,13 +77,13 @@ impl<const DENSE: u64, const SPREAD: u128> SpreadWord<DENSE, SPREAD> {
 
 /// A variable stored in advice columns corresponding to a row of [`SpreadTableConfig`].
 #[derive(Clone, Debug)]
-pub(super) struct SpreadVar<const DENSE: u64, const SPREAD: u128> {
+pub(super) struct SpreadVar<const DENSE: usize, const SPREAD: usize> {
     pub _tag: Value<u8>,
     pub dense: AssignedBits<DENSE>,
     pub spread: AssignedBits<SPREAD>,
 }
 
-impl<const DENSE: u64, const SPREAD: u64> SpreadVar<DENSE, SPREAD> {
+impl<const DENSE: usize, const SPREAD: usize> SpreadVar<DENSE, SPREAD> {
     pub(super) fn with_lookup(
         region: &mut Region<'_, pallas::Base>,
         cols: &SpreadInputs,
@@ -98,7 +98,7 @@ impl<const DENSE: u64, const SPREAD: u64> SpreadVar<DENSE, SPREAD> {
             || "tag",
             cols.tag,
             row,
-            || tag.map(|tag| pallas::Base::from(tag as u128)),
+            || tag.map(|tag| pallas::Base::from(tag as u64)),
         )?;
 
         let dense =
@@ -117,9 +117,9 @@ impl<const DENSE: u64, const SPREAD: u64> SpreadVar<DENSE, SPREAD> {
     pub(super) fn without_lookup(
         region: &mut Region<'_, pallas::Base>,
         dense_col: Column<Advice>,
-        dense_row: u64,
+        dense_row: usize,
         spread_col: Column<Advice>,
-        spread_row: u128,
+        spread_row: usize,
         word: Value<SpreadWord<DENSE, SPREAD>>,
     ) -> Result<Self, Error> {
         let tag = word.map(|word| word.tag);
@@ -447,23 +447,23 @@ mod tests {
                         add_row(
                             F::from(6),
                             F::from(0b111111111111111111111111111111111111111111),
-                            F::from(0b010101010101010101010101010101010101010101010101010101010101010101010101010101010101),
+                            F::from_u128(0b010101010101010101010101010101010101010101010101010101010101010101010101010101010101),
                         )?;
                         add_row(
                             F::from(7),
                             F::from(0b1000000000000000000000000000000000000000000),
-                            F::from(0b01000000000000000000000000000000000000000000000000000000000000000000000000000000000000),
+                            F::from_u128(0b01000000000000000000000000000000000000000000000000000000000000000000000000000000000000),
                         )?;
                         // - 56-bit
                         add_row(
                             F::from(7),
                             F::from(0b11111111111111111111111111111111111111111111111111111111),
-                            F::from(0b0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101),
+                            F::from_u128(0b0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101),
                         )?;
                         add_row(
                             F::from(8),
                             F::from(0b100000000000000000000000000000000000000000000000000000000),
-                            F::from(0b010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000),
+                            F::from_u128(0b010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000),
                         )?;
 
                         // Test random lookup values
@@ -485,7 +485,7 @@ mod tests {
                             add_row(
                                 F::from(u64::from(get_tag(word))),
                                 F::from(u64::from(word)),
-                                F::from(u128::from(interleave_u64_with_zeros(word))),
+                                F::from_u128(u128::from(interleave_u64_with_zeros(word))),
                             )?;
                         }
 

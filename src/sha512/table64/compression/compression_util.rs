@@ -5,6 +5,7 @@ use super::{
 use crate::sha512::table64::{
     util::*, AssignedBits, SpreadVar, SpreadWord, StateWord, Table64Assignment,
 };
+use ff::PrimeField;
 use halo2_proofs::{
     circuit::{Region, Value},
     pasta::pallas,
@@ -274,7 +275,7 @@ impl CompressionConfig {
         &self,
         region: &mut Region<'_, pallas::Base>,
         row: usize,
-        val: Value<u32>,
+        val: Value<u64>,
     ) -> Result<EfghVar, Error> {
         self.s_decompose_efgh.enable(region, row)?;
 
@@ -397,11 +398,11 @@ impl CompressionConfig {
 
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r = word.xor_upper_sigma();
-        let r_0: Value<[bool; 64]> = r.map(|r| r[..64].try_into().unwrap());
+        let r_0: Value<[bool; 32]> = r.map(|r| r[..32].try_into().unwrap());
         let r_0_even = r_0.map(even_bits);
         let r_0_odd = r_0.map(odd_bits);
 
-        let r_1: Value<[bool; 64]> = r.map(|r| r[64..].try_into().unwrap());
+        let r_1: Value<[bool; 32]> = r.map(|r| r[32..].try_into().unwrap());
         let r_1_even = r_1.map(even_bits);
         let r_1_odd = r_1.map(odd_bits);
 
@@ -452,11 +453,11 @@ impl CompressionConfig {
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r = word.xor_upper_sigma();
-        let r_0: Value<[bool; 64]> = r.map(|r| r[..64].try_into().unwrap());
+        let r_0: Value<[bool; 32]> = r.map(|r| r[..32].try_into().unwrap());
         let r_0_even = r_0.map(even_bits);
         let r_0_odd = r_0.map(odd_bits);
 
-        let r_1: Value<[bool; 64]> = r.map(|r| r[64..].try_into().unwrap());
+        let r_1: Value<[bool; 32]> = r.map(|r| r[32..].try_into().unwrap());
         let r_1_even = r_1.map(even_bits);
         let r_1_odd = r_1.map(odd_bits);
 
@@ -771,7 +772,7 @@ impl CompressionConfig {
                 || "h_prime_carry",
                 a_9,
                 row + 1,
-                || h_prime_carry.map(pallas::Base::from),
+                || h_prime_carry.map(pallas::Base::from_u128),
             )?;
 
             let h_prime: Value<[bool; 64]> = h_prime.map(|w| i2lebsp(w.into()));
@@ -818,7 +819,7 @@ impl CompressionConfig {
             || "e_new_carry",
             a_9,
             row + 1,
-            || e_new_carry.map(pallas::Base::from),
+            || e_new_carry.map(pallas::Base::from_u128),
         )?;
 
         Ok(e_new_dense)
@@ -872,7 +873,7 @@ impl CompressionConfig {
             || "a_new_carry",
             a_9,
             row,
-            || a_new_carry.map(pallas::Base::from),
+            || a_new_carry.map(pallas::Base::from_u128),
         )?;
 
         Ok(a_new_dense)
@@ -885,7 +886,7 @@ impl CompressionConfig {
         lo_col: Column<Advice>,
         hi_row: usize,
         hi_col: Column<Advice>,
-        word: Value<u32>,
+        word: Value<u64>,
     ) -> Result<RoundWordDense, Error> {
         let word: Value<[bool; 64]> = word.map(|w| i2lebsp(w.into()));
 

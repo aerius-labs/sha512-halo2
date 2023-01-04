@@ -29,7 +29,7 @@ impl Subregion1Word {
     }
 
     fn spread_c(&self) -> Value<[bool; 2]> {
-        self.spread_c.value().map(|v| v.spread())
+        self.c.value().map(|v| v.spread())
     }
 
     fn spread_d(&self) -> Value<[bool; 112]> {

@@ -9,7 +9,7 @@ pub const MASK_EVEN_64: u64= 0x5555555555555555;
 ///
 /// Panics if the expected length of the sequence `NUM_BITS` exceeds
 /// 64.
-pub fn i2lebsp<const NUM_BITS: u128>(int: u128) -> [bool; NUM_BITS] {
+pub fn i2lebsp<const NUM_BITS: usize>(int: u128) -> [bool; NUM_BITS] {
     /// Takes in an FnMut closure and returns a constant-length array with elements of
     /// type `Output`.
     fn gen_const_array<Output: Copy + Default, const LEN: usize>(
@@ -30,16 +30,16 @@ pub fn i2lebsp<const NUM_BITS: u128>(int: u128) -> [bool; NUM_BITS] {
     }
 
     assert!(NUM_BITS <= 128);
-    gen_const_array(|mask: u128| (int & (1 << mask)) != 0)
+    gen_const_array(|mask: usize| (int & (1 << mask)) != 0)
 }
 
 /// Returns the integer representation of a little-endian bit-array.
 /// Panics if the number of bits exceeds 64.
-pub fn lebs2ip<const K: usize>(bits: &[bool; K]) -> u64 {
-    assert!(K <= 64);
+pub fn lebs2ip<const K: usize>(bits: &[bool; K]) -> u128 {
+    assert!(K <= 128);
     bits.iter()
         .enumerate()
-        .fold(0u64, |acc, (i, b)| acc + if *b { 1 << i } else { 0 })
+        .fold(0u128, |acc, (i, b)| acc + if *b { 1 << i } else { 0 })
 }
 
 /// Helper function that interleaves a little-endian bit-array with zeros
@@ -48,7 +48,7 @@ pub fn lebs2ip<const K: usize>(bits: &[bool; K]) -> u64 {
 /// to
 ///         [b_0, 0, b_1, 0, ..., b_n, 0].
 /// Panics if bit-array is longer than 16 bits.
-pub fn spread_bits<const DENSE: u64, const SPREAD: u128>(
+pub fn spread_bits<const DENSE: usize, const SPREAD: usize>(
     bits: impl Into<[bool; DENSE]>,
 ) -> [bool; SPREAD] {
     assert_eq!(DENSE * 2, SPREAD);
@@ -102,8 +102,8 @@ pub fn odd_bits<const LEN: usize, const HALF: usize>(bits: [bool; LEN]) -> [bool
 /// Given a vector of words as vec![(lo: u32, hi: u32)], returns their sum: u64, along
 /// with a carry bit.
 pub fn sum_with_carry(words: Vec<(Value<u32>, Value<u32>)>) -> (Value<u64>, Value<u128>) {
-    let words_lo: Value<Vec<u128>> = words.iter().map(|(lo, _)| lo.map(|lo| lo as u64)).collect();
-    let words_hi: Value<Vec<u128>> = words.iter().map(|(_, hi)| hi.map(|hi| hi as u64)).collect();
+    let words_lo: Value<Vec<u128>> = words.iter().map(|(lo, _)| lo.map(|lo| lo as u128)).collect();
+    let words_hi: Value<Vec<u128>> = words.iter().map(|(_, hi)| hi.map(|hi| hi as u128)).collect();
 
     let sum: Value<u128> = {
         let sum_lo: Value<u128> = words_lo.map(|vec| vec.iter().sum());

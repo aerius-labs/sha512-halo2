@@ -204,6 +204,7 @@ impl<F: PrimeField> ScheduleGate<F> {
         spread_r1_odd: Expression<F>,
         a: Expression<F>,
         a_lo: Expression<F>,
+        a_hi: Expression<F>,
         spread_a_lo: Expression<F>,
         spread_a_hi: Expression<F>,
         spread_b: Expression<F>,

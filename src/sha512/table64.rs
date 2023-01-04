@@ -2,6 +2,7 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 
 use super::Sha512Instructions;
+use ff::PrimeField;
 use halo2_proofs::{
     circuit::{AssignedCell, Chip, Layouter, Region, Value},
     pasta::pallas,
@@ -91,8 +92,8 @@ impl<const LEN: usize> From<&Bits<LEN>> for [bool; LEN] {
 
 impl<const LEN: usize> From<&Bits<LEN>> for Assigned<pallas::Base> {
     fn from(bits: &Bits<LEN>) -> Assigned<pallas::Base> {
-        assert!(LEN <= 64);
-        pallas::Base::from(lebs2ip(&bits.0)).into()
+        assert!(LEN <= 128);
+        pallas::Base::from_u128(lebs2ip(&bits.0)).into()
     }
 }
 // impl From<&Bits<16>> for u16 {
@@ -475,14 +476,14 @@ trait Table64Assignment {
         lookup: &SpreadInputs,
         a_3: Column<Advice>,
         row: usize,
-        r_0_even: Value<[bool; 64]>,
-        r_0_odd: Value<[bool; 64]>,
-        r_1_even: Value<[bool; 64]>,
-        r_1_odd: Value<[bool; 64]>,
+        r_0_even: Value<[bool; 32]>,
+        r_0_odd: Value<[bool; 32]>,
+        r_1_even: Value<[bool; 32]>,
+        r_1_odd: Value<[bool; 32]>,
     ) -> Result<
         (
-            (AssignedBits<64>, AssignedBits<64>),
-            (AssignedBits<64>, AssignedBits<64>),
+            (AssignedBits<32>, AssignedBits<32>),
+            (AssignedBits<32>, AssignedBits<32>),
         ),
         Error,
     > {
@@ -491,25 +492,25 @@ trait Table64Assignment {
             region,
             lookup,
             row - 1,
-            r_0_even.map(SpreadWord::<64, 128>::new),
+            r_0_even.map(SpreadWord::<32, 64>::new),
         )?;
         let r_0_odd =  SpreadVar::with_lookup(
             region,
             lookup,
             row,
-            r_0_odd.map(SpreadWord::<64, 128>::new),
+            r_0_odd.map(SpreadWord::<32, 64>::new),
         )?;
         let r_1_even = SpreadVar::with_lookup(
             region,
             lookup,
             row + 1,
-            r_1_even.map(SpreadWord::<64, 128>::new),
+            r_1_even.map(SpreadWord::<32, 64>::new),
         )?;
         let r_1_odd = SpreadVar::with_lookup(
             region,
             lookup,
             row + 2,
-            r_1_odd.map(SpreadWord::<64, 128>::new),
+            r_1_odd.map(SpreadWord::<32, 64>::new),
         )?;
 
         // Assign and copy R_1^{odd}
@@ -531,11 +532,11 @@ trait Table64Assignment {
         lookup: &SpreadInputs,
         a_3: Column<Advice>,
         row: usize,
-        r_0_even: Value<[bool; 64]>,
-        r_0_odd: Value<[bool; 64]>,
-        r_1_even: Value<[bool; 64]>,
-        r_1_odd: Value<[bool; 64]>,
-    ) -> Result<(AssignedBits<64>, AssignedBits<64>), Error> {
+        r_0_even: Value<[bool; 32]>,
+        r_0_odd: Value<[bool; 32]>,
+        r_1_even: Value<[bool; 32]>,
+        r_1_odd: Value<[bool; 32]>,
+    ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let (even, _odd) = self.assign_spread_outputs(
             region, lookup, a_3, row, r_0_even, r_0_odd, r_1_even, r_1_odd,
         )?;

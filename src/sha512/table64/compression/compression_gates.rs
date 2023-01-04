@@ -273,7 +273,7 @@ impl<F: PrimeField> CompressionGate<F> {
         impl Iterator<Item = (&'static str, Expression<F>)>,
     > {
         let neg_check = {
-            let evens = Self::ones() * F::from(MASK_EVEN_64 as u128);
+            let evens = Self::ones() * F::from_u128(MASK_EVEN_64 as u128);
             // evens - spread_e_lo = spread_e_neg_lo
             let lo_check = spread_e_neg_lo.clone() + spread_e_lo + (evens.clone() * (-F::ONE));
             // evens - spread_e_hi = spread_e_neg_hi

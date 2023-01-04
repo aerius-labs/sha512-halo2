@@ -277,8 +277,8 @@ impl MessageScheduleConfig {
                 meta.query_advice(a_3, Rotation::cur()),  // spread_r1_odd
                 meta.query_advice(a_6, Rotation::cur()),  // a
                 meta.query_advice(a_3, Rotation::prev()), // a_lo
-                meta.query_advice(a_4, Rotation::prev()), // spread_a_lo
                 meta.query_advice(a_5, Rotation::next()), // a_hi
+                meta.query_advice(a_4, Rotation::prev()), // spread_a_lo
                 meta.query_advice(a_6, Rotation::next()), // spread_a_hi
                 meta.query_advice(a_5, Rotation::prev()), // spread_b
                 // meta.query_advice(a_4, Rotation::cur()),  // spread_a

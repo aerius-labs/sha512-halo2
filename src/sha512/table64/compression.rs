@@ -34,7 +34,7 @@ pub trait UpperSigmaVar<
     fn spread_c(&self) -> Value<[bool; C_LEN]>;
     fn spread_d(&self) -> Value<[bool; D_LEN]>;
 
-    fn xor_upper_sigma(&self) -> Value<[bool; 128]> {
+    fn xor_upper_sigma(&self) -> Value<[bool; 64]> {
         self.spread_a()
             .zip(self.spread_b())
             .zip(self.spread_c())
@@ -62,9 +62,9 @@ pub trait UpperSigmaVar<
                     .copied()
                     .collect::<Vec<_>>();
 
-                let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
-                let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
-                let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
+                let xor_0 = lebs2ip::<64>(&xor_0.try_into().unwrap());
+                let xor_1 = lebs2ip::<64>(&xor_1.try_into().unwrap());
+                let xor_2 = lebs2ip::<64>(&xor_2.try_into().unwrap());
 
                 i2lebsp(xor_0 + xor_1 + xor_2)
             })
@@ -515,6 +515,7 @@ impl CompressionConfig {
                 s_decompose_abcd,
                 a,
                 spread_a,
+                tag_a,
                 b_lo,
                 spread_b_lo,
                 b_hi,

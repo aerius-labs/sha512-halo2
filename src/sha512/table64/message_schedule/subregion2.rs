@@ -1,5 +1,6 @@
 use super::super::{util::*, AssignedBits, Bits, SpreadVar, SpreadWord, Table64Assignment};
 use super::{schedule_util::*, MessageScheduleConfig, MessageWord};
+use ff::PrimeField;
 use halo2_proofs::{
     circuit::{Region, Value},
     pasta::pallas,
@@ -257,13 +258,13 @@ impl MessageScheduleConfig {
                 || format!("W_{}", new_word_idx),
                 a_5,
                 get_word_row(new_word_idx - 16) + 1,
-                || word.map(|word| pallas::Base::from(word as u128)),
+                || word.map(|word| pallas::Base::from_u128(word as u128)),
             )?;
             region.assign_advice(
                 || format!("carry_{}", new_word_idx),
                 a_9,
                 get_word_row(new_word_idx - 16) + 1,
-                || carry.map(pallas::Base::from),
+                || carry.map(pallas::Base::from_u128),
             )?;
             let (word, halves) = self.assign_word_and_halves(region, word, new_word_idx)?;
             w.push(MessageWord(word));
@@ -345,8 +346,8 @@ impl MessageScheduleConfig {
             b: spread_b.dense,
             c,
             d,
-            e: spread_e.dense,
-            f: spread_f.dense,
+            _e: spread_e.dense,
+            _f: spread_f.dense,
             g,
             spread_e: spread_e.spread,
             spread_f: spread_f.spread,
