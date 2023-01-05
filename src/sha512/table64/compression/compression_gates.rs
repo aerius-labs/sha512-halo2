@@ -63,11 +63,11 @@ impl<F: PrimeField> CompressionGate<F> {
         let spread_check = spread_a
             + spread_b_lo * F::from(1 << 56)
             + spread_b_hi * F::from(1 << 62)
-            + spread_c_lo * F::from(1 << 68)
-            + spread_c_hi * F::from(1 << 72)
-            + spread_d * F::from(1 << 78)
+            + spread_c_lo * F::from_u128(1 << 68)
+            + spread_c_hi * F::from_u128(1 << 72)
+            + spread_d * F::from_u128(1 << 78)
             + spread_word_lo * (-F::ONE)
-            + spread_word_hi * F::from(1 << 64) * (-F::ONE);
+            + spread_word_hi * F::from_u128(1 << 64) * (-F::ONE);
 
         Constraints::with_selector(
             s_decompose_abcd,
@@ -129,9 +129,9 @@ impl<F: PrimeField> CompressionGate<F> {
             + spread_b_lo * F::from(1 << 28)
             + spread_b_hi * F::from(1 << 32)
             + spread_c * F::from(1 << 36)
-            + spread_d * F::from(1 << 82)
+            + spread_d * F::from_u128(1 << 82)
             + spread_word_lo * (-F::ONE)
-            + spread_word_hi * F::from(1 << 64) * (-F::ONE);
+            + spread_word_hi * F::from_u128(1 << 64) * (-F::ONE);
 
         Constraints::with_selector(
             s_decompose_efgh,
@@ -162,25 +162,25 @@ impl<F: PrimeField> CompressionGate<F> {
     ) -> Option<(&'static str, Expression<F>)> {
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from(1 << 64);
+            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c_lo.clone() * F::from(1 << 12)
             + spread_c_hi.clone() * F::from(1 << 18)
             + spread_d.clone() * F::from(1 << 22)
-            + spread_a.clone() * F::from(1 << 72);
+            + spread_a.clone() * F::from_u128(1 << 72);
         let xor_1 = spread_c_lo.clone()
             + spread_c_hi.clone() * F::from(1 << 6)
             + spread_d.clone() * F::from(1 << 10)
             + spread_a.clone() * F::from(1 << 60)
-            + spread_b_lo.clone() * F::from(1 << 116)
-            + spread_b_hi.clone() * F::from(1 << 122);
+            + spread_b_lo.clone() * F::from_u128(1 << 116)
+            + spread_b_hi.clone() * F::from_u128(1 << 122);
         let xor_2 = spread_d
             + spread_a * F::from(1 << 50)
-            + spread_b_lo * F::from(1 << 106)
-            + spread_b_hi * F::from(1 << 112)
-            + spread_c_lo * F::from(1 << 118)
-            + spread_c_hi * F::from(1 << 124);
+            + spread_b_lo * F::from_u128(1 << 106)
+            + spread_b_hi * F::from_u128(1 << 112)
+            + spread_c_lo * F::from_u128(1 << 118)
+            + spread_c_hi * F::from_u128(1 << 124);
         let xor = xor_0 + xor_1 + xor_2;
         let check = spread_witness + (xor * -F::ONE);
 
@@ -204,23 +204,23 @@ impl<F: PrimeField> CompressionGate<F> {
     ) -> Option<(&'static str, Expression<F>)> {
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from(1 << 64);
+            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
 
         let xor_0 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 4)
             + spread_c.clone() * F::from(1 << 8)
             + spread_d.clone() * F::from(1 << 54)
-            + spread_a.clone() * F::from(1 << 100);
+            + spread_a.clone() * F::from_u128(1 << 100);
         let xor_1 = spread_c.clone()
             + spread_d.clone() * F::from(1 << 46)
-            + spread_a.clone() * F::from(1 << 92)
-            + spread_b_lo.clone() * F::from(1 << 120)
-            + spread_b_hi.clone() * F::from(1 << 124);
+            + spread_a.clone() * F::from_u128(1 << 92)
+            + spread_b_lo.clone() * F::from_u128(1 << 120)
+            + spread_b_hi.clone() * F::from_u128(1 << 124);
         let xor_2 = spread_d
             + spread_a * F::from(1 << 46)
-            + spread_b_lo * F::from(1 << 74)
-            + spread_b_hi * F::from(1 << 78)
-            + spread_c * F::from(1 << 82);
+            + spread_b_lo * F::from_u128(1 << 74)
+            + spread_b_hi * F::from_u128(1 << 78)
+            + spread_c * F::from_u128(1 << 82);
         let xor = xor_0 + xor_1 + xor_2;
         let check = spread_witness + (xor * -F::ONE);
 
@@ -242,10 +242,10 @@ impl<F: PrimeField> CompressionGate<F> {
     ) -> Option<(&'static str, Expression<F>)> {
         let lhs_lo = spread_e_lo + spread_f_lo;
         let lhs_hi = spread_e_hi + spread_f_hi;
-        let lhs = lhs_lo + lhs_hi * F::from(1 << 64);
+        let lhs = lhs_lo + lhs_hi * F::from_u128(1 << 64);
 
-        let rhs_even = spread_p0_even + spread_p1_even * F::from(1 << 64);
-        let rhs_odd = spread_p0_odd + spread_p1_odd * F::from(1 << 64);
+        let rhs_even = spread_p0_even + spread_p1_even * F::from_u128(1 << 64);
+        let rhs_odd = spread_p0_odd + spread_p1_odd * F::from_u128(1 << 64);
         let rhs = rhs_even + rhs_odd * F::from(2);
 
         let check = lhs + rhs * -F::ONE;
@@ -286,10 +286,10 @@ impl<F: PrimeField> CompressionGate<F> {
 
         let lhs_lo = spread_e_neg_lo + spread_g_lo;
         let lhs_hi = spread_e_neg_hi + spread_g_hi;
-        let lhs = lhs_lo + lhs_hi * F::from(1 << 64);
+        let lhs = lhs_lo + lhs_hi * F::from_u128(1 << 64);
 
-        let rhs_even = spread_q0_even + spread_q1_even * F::from(1 << 64);
-        let rhs_odd = spread_q0_odd + spread_q1_odd * F::from(1 << 64);
+        let rhs_even = spread_q0_even + spread_q1_even * F::from_u128(1 << 64);
+        let rhs_odd = spread_q0_odd + spread_q1_odd * F::from_u128(1 << 64);
         let rhs = rhs_even + rhs_odd * F::from(2);
 
         Constraints::with_selector(s_ch_neg, neg_check.chain(Some(("s_ch_neg", lhs - rhs))))
@@ -310,13 +310,13 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_c_lo: Expression<F>,
         spread_c_hi: Expression<F>,
     ) -> Option<(&'static str, Expression<F>)> {
-        let maj_even = spread_m_0_even + spread_m_1_even * F::from(1 << 64);
-        let maj_odd = spread_m_0_odd + spread_m_1_odd * F::from(1 << 64);
+        let maj_even = spread_m_0_even + spread_m_1_even * F::from_u128(1 << 64);
+        let maj_odd = spread_m_0_odd + spread_m_1_odd * F::from_u128(1 << 64);
         let maj = maj_even + maj_odd * F::from(2);
 
-        let a = spread_a_lo + spread_a_hi * F::from(1 << 64);
-        let b = spread_b_lo + spread_b_hi * F::from(1 << 64);
-        let c = spread_c_lo + spread_c_hi * F::from(1 << 64);
+        let a = spread_a_lo + spread_a_hi * F::from_u128(1 << 64);
+        let b = spread_b_lo + spread_b_hi * F::from_u128(1 << 64);
+        let c = spread_c_lo + spread_c_hi * F::from_u128(1 << 64);
         let sum = a + b + c;
 
         Some(("maj", s_maj * (sum - maj)))
@@ -348,7 +348,7 @@ impl<F: PrimeField> CompressionGate<F> {
         let sum = lo + hi * F::from(1 << 32);
         let h_prime = h_prime_lo + h_prime_hi * F::from(1 << 32);
 
-        let check = sum - (h_prime_carry * F::from(1 << 64)) - h_prime;
+        let check = sum - (h_prime_carry * F::from_u128(1 << 64)) - h_prime;
 
         Some(("s_h_prime", s_h_prime * check))
     }
@@ -372,7 +372,7 @@ impl<F: PrimeField> CompressionGate<F> {
         let sum = lo + hi * F::from(1 << 32);
         let a_new = a_new_lo + a_new_hi * F::from(1 << 32);
 
-        let check = sum - (a_new_carry * F::from(1 << 64)) - a_new;
+        let check = sum - (a_new_carry * F::from_u128(1 << 64)) - a_new;
 
         Some(("s_a_new", s_a_new * check))
     }
@@ -394,7 +394,7 @@ impl<F: PrimeField> CompressionGate<F> {
         let sum = lo + hi * F::from(1 << 32);
         let e_new = e_new_lo + e_new_hi * F::from(1 << 32);
 
-        let check = sum - (e_new_carry * F::from(1 << 64)) - e_new;
+        let check = sum - (e_new_carry * F::from_u128(1 << 64)) - e_new;
 
         Some(("s_e_new", s_e_new * check))
     }

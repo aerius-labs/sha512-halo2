@@ -27,7 +27,7 @@ impl<F: PrimeField> ScheduleGate<F> {
 
         let word_check = lo
             + hi * F::from(1 << 32)
-            + (carry.clone() * F::from(1 << 64) * (-F::ONE))
+            + (carry.clone() * F::from_u128(1 << 64) * (-F::ONE))
             + (word * (-F::ONE));
         let carry_check = Gate::range_check(carry, 0, 3);
 
@@ -172,19 +172,19 @@ impl<F: PrimeField> ScheduleGate<F> {
         let check_b = Self::check_b(b, b_lo, b_hi);
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from(1 << 64);
+            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_c.clone()
             + spread_d.clone() * F::from(1 << 2);
         let xor_1 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c.clone() * F::from(1 << 12)
             + spread_d.clone() * F::from(1 << 14)
-            + spread_a.clone() * F::from(1 << 126);
+            + spread_a.clone() * F::from_u128(1 << 126);
         let xor_2 = spread_d
-            + spread_a * F::from(1 << 112)
-            + spread_b_lo * F::from(1 << 114)
-            + spread_b_hi * F::from(1 << 120)
-            + spread_c * F::from(1 << 126);
+            + spread_a * F::from_u128(1 << 112)
+            + spread_b_lo * F::from_u128(1 << 114)
+            + spread_b_hi * F::from_u128(1 << 120)
+            + spread_c * F::from_u128(1 << 126);
         let xor = xor_0 + xor_1 + xor_2;
 
         check_spread_and_range
@@ -222,15 +222,15 @@ impl<F: PrimeField> ScheduleGate<F> {
         let check_a = Self::check_b(a, a_lo, a_hi);
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from(1 << 64);
+            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_b.clone()
             + spread_c.clone() * F::from(1 << 26)
-            + spread_d.clone() * F::from(1 << 110);
+            + spread_d.clone() * F::from_u128(1 << 110);
         let xor_1 = spread_c.clone()
-            + spread_d.clone() * F::from(1 << 84)
-            + spread_a_lo.clone() * F::from(1 << 90)
-            + spread_a_hi.clone() * F::from(1 << 96)
-            + spread_b.clone() * F::from(1 << 102);
+            + spread_d.clone() * F::from_u128(1 << 84)
+            + spread_a_lo.clone() * F::from_u128(1 << 90)
+            + spread_a_hi.clone() * F::from_u128(1 << 96)
+            + spread_b.clone() * F::from_u128(1 << 102);
         let xor_2 = spread_d
             + spread_a_lo * F::from(1 << 6)
             + spread_a_hi * F::from(1 << 12)
@@ -277,27 +277,27 @@ impl<F: PrimeField> ScheduleGate<F> {
         let check_b = Self::check_b(b, b_lo, b_hi);
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from(1 << 64);
+            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_d.clone()
             + spread_e.clone() * F::from(1 << 2)
             + spread_f.clone() * F::from(1 << 24)
-            + spread_g.clone() * F::from(1 << 108);
+            + spread_g.clone() * F::from_u128(1 << 108);
         let xor_1 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c.clone() * F::from(1 << 10)
             + spread_d.clone() * F::from(1 << 12)
             + spread_e.clone() * F::from(1 << 14)
             + spread_f.clone() * F::from(1 << 36)
-            + spread_g.clone() * F::from(1 << 120)
-            + spread_a.clone() * F::from(1 << 126);
+            + spread_g.clone() * F::from_u128(1 << 120)
+            + spread_a.clone() * F::from_u128(1 << 126);
         let xor_2 = spread_e
             + spread_f * F::from(1 << 22)
-            + spread_g * F::from(1 << 106)
-            + spread_a * F::from(1 << 112)
-            + spread_b_lo * F::from(1 << 114)
-            + spread_b_hi * F::from(1 << 120)
-            + spread_c * F::from(1 << 124)
-            + spread_d * F::from(1 << 126);
+            + spread_g * F::from_u128(1 << 106)
+            + spread_a * F::from_u128(1 << 112)
+            + spread_b_lo * F::from_u128(1 << 114)
+            + spread_b_hi * F::from_u128(1 << 120)
+            + spread_c * F::from_u128(1 << 124)
+            + spread_d * F::from_u128(1 << 126);
         let xor = xor_0 + xor_1 + xor_2;
 
         check_spread_and_range
@@ -339,20 +339,20 @@ impl<F: PrimeField> ScheduleGate<F> {
         let check_b = Self::check_b(b, b_lo, b_hi);
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from(1 << 64);
+            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_c.clone()
             + spread_d.clone() * F::from(1 << 2)
             + spread_e.clone() * F::from(1 << 4)
             + spread_f.clone() * F::from(1 << 26)
-            + spread_g.clone() * F::from(1 << 110);
+            + spread_g.clone() * F::from_u128(1 << 110);
         let xor_1 = spread_f.clone()
-            + spread_g.clone() * F::from(1 << 84)
-            + spread_a.clone() * F::from(1 << 90)
-            + spread_b_lo.clone() * F::from(1 << 92)
-            + spread_b_hi.clone() * F::from(1 << 98)
-            + spread_c.clone() * F::from(1 << 102)
-            + spread_d.clone() * F::from(1 << 104)
-            + spread_e.clone() * F::from(1 << 106);
+            + spread_g.clone() * F::from_u128(1 << 84)
+            + spread_a.clone() * F::from_u128(1 << 90)
+            + spread_b_lo.clone() * F::from_u128(1 << 92)
+            + spread_b_hi.clone() * F::from_u128(1 << 98)
+            + spread_c.clone() * F::from_u128(1 << 102)
+            + spread_d.clone() * F::from_u128(1 << 104)
+            + spread_e.clone() * F::from_u128(1 << 106);
         let xor_2 = spread_g
             + spread_a * F::from(1 << 6)
             + spread_b_lo * F::from(1 << 8)

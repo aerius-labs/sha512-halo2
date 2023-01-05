@@ -452,7 +452,7 @@ mod tests {
 
         let circuit: MyCircuit = MyCircuit {};
 
-        let prover = match MockProver::<pallas::Base>::run(65, &circuit, vec![]) {
+        let prover = match MockProver::<pallas::Base>::run(63, &circuit, vec![]) {
             Ok(prover) => prover,
             Err(e) => panic!("{:?}", e),
         };

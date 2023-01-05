@@ -10,14 +10,14 @@ use halo2_proofs::{
 use std::convert::TryInto;
 use std::marker::PhantomData;
 
-const BITS_11: u64 = 1 << 11;
-const BITS_13: u64 = 1 << 13;
-const BITS_14: u64 = 1 << 14;
-const BITS_23: u64 = 1 << 23;
-const BITS_25: u64 = 1 << 25;
-const BITS_28: u64 = 1 << 28;
-const BITS_42: u64 = 1 << 42;
-const BITS_56: u64 = 1 << 56;
+const BITS_11: u128 = 1 << 11;
+const BITS_13: u128 = 1 << 13;
+const BITS_14: u128 = 1 << 14;
+const BITS_23: u128 = 1 << 23;
+const BITS_25: u128 = 1 << 25;
+const BITS_28: u128 = 1 << 28;
+const BITS_42: u128 = 1 << 42;
+const BITS_56: u128 = 1 << 56;
 
 /// An input word into a lookup, containing (tag, dense, spread)
 #[derive(Copy, Clone, Debug)]
@@ -28,8 +28,8 @@ pub(super) struct SpreadWord<const DENSE: usize, const SPREAD: usize> {
 }
 
 /// Helper function that returns tag of 64-bit input
-pub fn get_tag(input: u64) -> u8 {
-    let input = input as u64;
+pub fn get_tag(input: u128) -> u8 {
+    let input = input as u128;
     if input < BITS_11 {
         0
     } else if input < BITS_13 {
@@ -55,7 +55,7 @@ impl<const DENSE: usize, const SPREAD: usize> SpreadWord<DENSE, SPREAD> {
     pub(super) fn new(dense: [bool; DENSE]) -> Self {
         assert!(DENSE <= 64);
         SpreadWord {
-            tag: get_tag(lebs2ip(&dense) as u64),
+            tag: get_tag(lebs2ip(&dense) as u128),
             dense,
             spread: spread_bits(dense),
         }
@@ -68,7 +68,7 @@ impl<const DENSE: usize, const SPREAD: usize> SpreadWord<DENSE, SPREAD> {
         assert!(DENSE <= 64);
         let dense: [bool; DENSE] = dense.try_into().unwrap();
         SpreadWord {
-            tag: get_tag(lebs2ip(&dense) as u64),
+            tag: get_tag(lebs2ip(&dense) as u128),
             dense,
             spread: spread_bits(dense),
         }
@@ -236,12 +236,12 @@ impl<F: PrimeField> SpreadTableChip<F> {
                 // We generate the row values lazily (we only need them during keygen).
                 let mut rows = SpreadTableConfig::generate::<F>();
 
-                for index in 0..(1 << 64) {
+                for index in 0..(1_u128 << 64) {
                     let mut row = None;
                     table.assign_cell(
                         || "tag",
                         config.table.tag,
-                        index,
+                        index as usize,
                         || {
                             row = rows.next();
                             Value::known(row.map(|(tag, _, _)| tag).unwrap())
@@ -250,13 +250,13 @@ impl<F: PrimeField> SpreadTableChip<F> {
                     table.assign_cell(
                         || "dense",
                         config.table.dense,
-                        index,
+                        index as usize,
                         || Value::known(row.map(|(_, dense, _)| dense).unwrap()),
                     )?;
                     table.assign_cell(
                         || "spread",
                         config.table.spread,
-                        index,
+                        index as usize,
                         || Value::known(row.map(|(_, _, spread)| spread).unwrap()),
                     )?;
                 }
@@ -269,7 +269,7 @@ impl<F: PrimeField> SpreadTableChip<F> {
 
 impl SpreadTableConfig {
     fn generate<F: PrimeField>() -> impl Iterator<Item = (F, F, F)> {
-        (1..=(1 << 64)).scan((F::ZERO, F::ZERO, F::ZERO), |(tag, dense, spread), i| {
+        (1..=(1_u128 << 64)).scan((F::ZERO, F::ZERO, F::ZERO), |(tag, dense, spread), i| {
             // We computed this table row in the previous iteration.
             let res = (*tag, *dense, *spread);
 
@@ -483,7 +483,7 @@ mod tests {
                         for _ in 0..10 {
                             let word: u64 = rng.gen();
                             add_row(
-                                F::from(u64::from(get_tag(word))),
+                                F::from(u64::from(get_tag(word as u128))),
                                 F::from(u64::from(word)),
                                 F::from_u128(u128::from(interleave_u64_with_zeros(word))),
                             )?;
