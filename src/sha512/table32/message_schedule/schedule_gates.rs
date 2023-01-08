@@ -55,17 +55,21 @@ impl<F: PrimeField> ScheduleGate<F> {
         a: Expression<F>,
         b: Expression<F>,
         c: Expression<F>,
-        d: Expression<F>,
-        tag_d: Expression<F>,
+        d_lo: Expression<F>,
+        d_hi: Expression<F>,
+        tag_d_lo: Expression<F>,
+        tag_d_hi: Expression<F>,
         word: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
         let decompose_check =
-            a + b * F::from(1 << 1) + c * F::from(1 << 7) + d * F::from(1 << 8) + word * (-F::ONE);
-        let range_check_tag_d = Gate::range_check(tag_d, 0, 7);
+            a + b * F::from(1 << 1) + c * F::from(1 << 7) + d_lo * F::from(1 << 8) + d_hi * F::from(1 << 36) + word * (-F::ONE);
+        let range_check_tag_d_lo = Gate::range_check(tag_d_lo, 0, 6);
+        let range_check_tag_d_hi = Gate::range_check(tag_d_hi, 0, 6);
 
         [
             ("decompose_check", decompose_check),
-            ("range_check_tag_d", range_check_tag_d),
+            ("range_check_tag_d_lo", range_check_tag_d_lo),
+            ("range_check_tag_d_hi", range_check_tag_d_hi),
         ]
         .into_iter()
         .map(move |(name, poly)| (name, s_decompose_1.clone() * poly))
@@ -83,8 +87,10 @@ impl<F: PrimeField> ScheduleGate<F> {
         d: Expression<F>,
         e: Expression<F>,
         tag_e: Expression<F>,
-        f: Expression<F>,
-        tag_f: Expression<F>,
+        f_lo: Expression<F>,
+        f_hi: Expression<F>,
+        tag_f_lo: Expression<F>,
+        tag_f_hi: Expression<F>,
         g: Expression<F>,
         word: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
@@ -93,16 +99,19 @@ impl<F: PrimeField> ScheduleGate<F> {
             + c * F::from(1 << 6)
             + d * F::from(1 << 7)
             + e * F::from(1 << 8)
-            + f * F::from(1 << 19)
+            + f_lo * F::from(1 << 19)
+            + f_hi * F::from(1 << 40)
             + g * F::from(1 << 61)
             + word * (-F::ONE);
         let range_check_tag_e = Gate::range_check(tag_e, 0, 0);
-        let range_check_tag_f = Gate::range_check(tag_f, 0, 6);
+        let range_check_tag_f_lo = Gate::range_check(tag_f_lo, 0, 3);
+        let range_check_tag_f_hi = Gate::range_check(tag_f_hi, 0, 3);
 
         [
             ("decompose_check", decompose_check),
             ("range_check_tag_e", range_check_tag_e),
-            ("range_check_tag_f", range_check_tag_f),
+            ("range_check_tag_f_lo", range_check_tag_f_lo),
+            ("range_check_tag_f_hi", range_check_tag_f_hi),
         ]
         .into_iter()
         .map(move |(name, poly)| (name, s_decompose_2.clone() * poly))
@@ -116,23 +125,28 @@ impl<F: PrimeField> ScheduleGate<F> {
         a: Expression<F>,
         b: Expression<F>,
         tag_b: Expression<F>,
-        c: Expression<F>,
-        tag_c: Expression<F>,
+        c_lo: Expression<F>,
+        c_hi: Expression<F>,
+        tag_c_lo: Expression<F>,
+        tag_c_hi: Expression<F>,
         d: Expression<F>,
         word: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
         let decompose_check = a
             + b * F::from(1 << 6)
-            + c * F::from(1 << 19)
+            + c_lo * F::from(1 << 19)
+            + c_hi * F::from(1 << 40)
             + d * F::from(1 << 61)
             + word * (-F::ONE);
         let range_check_tag_b = Gate::range_check(tag_b, 0, 1);
-        let range_check_tag_c = Gate::range_check(tag_c, 0, 6);
+        let range_check_tag_c_lo = Gate::range_check(tag_c_lo, 0, 3);
+        let range_check_tag_c_hi = Gate::range_check(tag_c_hi, 0, 3);
 
         [
             ("decompose_check", decompose_check),
             ("range_check_tag_b", range_check_tag_b),
-            ("range_check_tag_c", range_check_tag_c),
+            ("range_check_tag_c_lo", range_check_tag_c_lo),
+            ("range_check_tag_c_hi", range_check_tag_c_hi),
         ]
         .into_iter()
         .map(move |(name, poly)| (name, s_decompose_3.clone() * poly))
@@ -160,7 +174,8 @@ impl<F: PrimeField> ScheduleGate<F> {
         b_hi: Expression<F>,
         spread_b_hi: Expression<F>,
         spread_c: Expression<F>,
-        spread_d: Expression<F>,
+        spread_d_lo: Expression<F>,
+        spread_d_hi: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
         let check_spread_and_range =
             Gate::three_bit_spread_and_range(b_lo.clone(), spread_b_lo.clone())
@@ -174,13 +189,16 @@ impl<F: PrimeField> ScheduleGate<F> {
             + spread_r0_odd * F::from(2)
             + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_c.clone()
-            + spread_d.clone() * F::from(1 << 2);
+            + spread_d_lo.clone() * F::from(1 << 2)
+            + spread_d_hi.clone() * F::from(1 << 58);
         let xor_1 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c.clone() * F::from(1 << 12)
-            + spread_d.clone() * F::from(1 << 14)
+            + spread_d_lo.clone() * F::from(1 << 14)
+            + spread_d_hi.clone() * F::from_u128(1 << 70)
             + spread_a.clone() * F::from_u128(1 << 126);
-        let xor_2 = spread_d
+        let xor_2 = spread_d_lo
+            + spread_d_hi * F::from(1 << 56)
             + spread_a * F::from_u128(1 << 112)
             + spread_b_lo * F::from_u128(1 << 114)
             + spread_b_hi * F::from_u128(1 << 120)
@@ -208,7 +226,8 @@ impl<F: PrimeField> ScheduleGate<F> {
         spread_a_lo: Expression<F>,
         spread_a_hi: Expression<F>,
         spread_b: Expression<F>,
-        spread_c: Expression<F>,
+        spread_c_lo: Expression<F>,
+        spread_c_hi: Expression<F>,
         d: Expression<F>,
         spread_d: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
@@ -224,9 +243,11 @@ impl<F: PrimeField> ScheduleGate<F> {
             + spread_r0_odd * F::from(2)
             + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_b.clone()
-            + spread_c.clone() * F::from(1 << 26)
+            + spread_c_lo.clone() * F::from(1 << 26)
+            + spread_c_hi.clone() * F::from_u128(1 << 68)
             + spread_d.clone() * F::from_u128(1 << 110);
-        let xor_1 = spread_c.clone()
+        let xor_1 = spread_c_lo.clone()
+            + spread_c_hi.clone() * F::from(1 << 42)
             + spread_d.clone() * F::from_u128(1 << 84)
             + spread_a_lo.clone() * F::from_u128(1 << 90)
             + spread_a_hi.clone() * F::from_u128(1 << 96)
@@ -235,7 +256,8 @@ impl<F: PrimeField> ScheduleGate<F> {
             + spread_a_lo * F::from(1 << 6)
             + spread_a_hi * F::from(1 << 12)
             + spread_b * F::from(1 << 18)
-            + spread_c * F::from(1 << 44);
+            + spread_c_lo * F::from(1 << 44)
+            + spread_c_hi * F::from_u128(1 << 86);
         let xor = xor_0 + xor_1 + xor_2;
 
         check_spread_and_range
@@ -262,7 +284,8 @@ impl<F: PrimeField> ScheduleGate<F> {
         spread_c: Expression<F>,
         spread_d: Expression<F>,
         spread_e: Expression<F>,
-        spread_f: Expression<F>,
+        spread_f_lo: Expression<F>,
+        spread_f_hi: Expression<F>,
         g: Expression<F>,
         spread_g: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
@@ -280,18 +303,21 @@ impl<F: PrimeField> ScheduleGate<F> {
             + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_d.clone()
             + spread_e.clone() * F::from(1 << 2)
-            + spread_f.clone() * F::from(1 << 24)
+            + spread_f_lo.clone() * F::from(1 << 24)
+            + spread_f_hi.clone() * F::from_u128(1 << 66)
             + spread_g.clone() * F::from_u128(1 << 108);
         let xor_1 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c.clone() * F::from(1 << 10)
             + spread_d.clone() * F::from(1 << 12)
             + spread_e.clone() * F::from(1 << 14)
-            + spread_f.clone() * F::from(1 << 36)
+            + spread_f_lo.clone() * F::from(1 << 36)
+            + spread_f_hi.clone() * F::from_u128(1 << 78)
             + spread_g.clone() * F::from_u128(1 << 120)
             + spread_a.clone() * F::from_u128(1 << 126);
         let xor_2 = spread_e
-            + spread_f * F::from(1 << 22)
+            + spread_f_lo * F::from(1 << 22)
+            + spread_f_hi * F::from_u128(1 << 64)
             + spread_g * F::from_u128(1 << 106)
             + spread_a * F::from_u128(1 << 112)
             + spread_b_lo * F::from_u128(1 << 114)
@@ -324,7 +350,8 @@ impl<F: PrimeField> ScheduleGate<F> {
         spread_c: Expression<F>,
         spread_d: Expression<F>,
         spread_e: Expression<F>,
-        spread_f: Expression<F>,
+        spread_f_lo: Expression<F>,
+        spread_f_hi: Expression<F>,
         g: Expression<F>,
         spread_g: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
@@ -343,9 +370,11 @@ impl<F: PrimeField> ScheduleGate<F> {
         let xor_0 = spread_c.clone()
             + spread_d.clone() * F::from(1 << 2)
             + spread_e.clone() * F::from(1 << 4)
-            + spread_f.clone() * F::from(1 << 26)
+            + spread_f_lo.clone() * F::from(1 << 26)
+            + spread_f_hi.clone() * F::from_u128(1 << 68)
             + spread_g.clone() * F::from_u128(1 << 110);
-        let xor_1 = spread_f.clone()
+        let xor_1 = spread_f_lo.clone()
+            + spread_f_hi.clone() * F::from(1 << 42)
             + spread_g.clone() * F::from_u128(1 << 84)
             + spread_a.clone() * F::from_u128(1 << 90)
             + spread_b_lo.clone() * F::from_u128(1 << 92)
@@ -360,7 +389,8 @@ impl<F: PrimeField> ScheduleGate<F> {
             + spread_c * F::from(1 << 18)
             + spread_d * F::from(1 << 20)
             + spread_e * F::from(1 << 22)
-            + spread_f * F::from(1 << 44);
+            + spread_f_lo * F::from(1 << 44)
+            + spread_f_hi * F::from_u128(1 << 86);
         let xor = xor_0 + xor_1 + xor_2;
 
         check_spread_and_range

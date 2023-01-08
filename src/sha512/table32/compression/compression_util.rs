@@ -2,8 +2,8 @@ use super::{
     AbcdVar, CompressionConfig, EfghVar, RoundWord, RoundWordA, RoundWordDense, RoundWordE,
     RoundWordSpread, State, UpperSigmaVar,
 };
-use crate::sha512::table64::{
-    util::*, AssignedBits, SpreadVar, SpreadWord, StateWord, Table64Assignment,
+use crate::sha512::table32::{
+    util::*, AssignedBits, SpreadVar, SpreadWord, StateWord, Table32Assignment,
 };
 use ff::PrimeField;
 use halo2_proofs::{
@@ -772,7 +772,7 @@ impl CompressionConfig {
                 || "h_prime_carry",
                 a_9,
                 row + 1,
-                || h_prime_carry.map(pallas::Base::from_u128),
+                || h_prime_carry.map(pallas::Base::from),
             )?;
 
             let h_prime: Value<[bool; 64]> = h_prime.map(|w| i2lebsp(w.into()));
@@ -819,7 +819,7 @@ impl CompressionConfig {
             || "e_new_carry",
             a_9,
             row + 1,
-            || e_new_carry.map(pallas::Base::from_u128),
+            || e_new_carry.map(pallas::Base::from),
         )?;
 
         Ok(e_new_dense)
@@ -873,7 +873,7 @@ impl CompressionConfig {
             || "a_new_carry",
             a_9,
             row,
-            || a_new_carry.map(pallas::Base::from_u128),
+            || a_new_carry.map(pallas::Base::from),
         )?;
 
         Ok(a_new_dense)

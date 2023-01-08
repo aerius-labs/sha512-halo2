@@ -50,8 +50,8 @@ impl<F: PrimeField> CompressionGate<F> {
                     spread_c_hi.clone(),
                 ))
                 .chain(Gate::two_bit_spread_and_range(c_lo.clone(), spread_c_lo.clone()));
-        let range_check_tag_a = Gate::range_check(tag_a, 0, 5);
-        let range_check_tag_d = Gate::range_check(tag_d, 0, 4);
+        let range_check_tag_a = Gate::range_check(tag_a, 0, 6);
+        let range_check_tag_d = Gate::range_check(tag_d, 0, 5);
         let dense_check = a
             + b_lo * F::from(1 << 28)
             + b_hi * F::from(1 << 31)
@@ -116,8 +116,8 @@ impl<F: PrimeField> CompressionGate<F> {
                     spread_b_hi.clone(),
                 ));
         let range_check_tag_a = Gate::range_check(tag_a, 0, 2);        
-        let range_check_tag_c = Gate::range_check(tag_c, 0, 3);
-        let range_check_tag_d = Gate::range_check(tag_d, 0, 3);
+        let range_check_tag_c = Gate::range_check(tag_c, 0, 4);
+        let range_check_tag_d = Gate::range_check(tag_d, 0, 4);
         let dense_check = a
             + b_lo * F::from(1 << 14)
             + b_hi * F::from(1 << 16)

@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use super::{super::BLOCK_SIZE, AssignedBits, BlockWord, SpreadInputs, Table64Assignment, ROUNDS};
+use super::{super::BLOCK_SIZE, AssignedBits, BlockWord, SpreadInputs, Table32Assignment, ROUNDS};
 use halo2_proofs::{
     circuit::Layouter,
     pasta::pallas,
@@ -57,7 +57,7 @@ pub(super) struct MessageScheduleConfig {
     s_lower_sigma_1_v2: Selector,
 }
 
-impl Table64Assignment for MessageScheduleConfig {}
+impl Table32Assignment for MessageScheduleConfig {}
 
 impl MessageScheduleConfig {
     /// Configures the message schedule.
@@ -151,11 +151,13 @@ impl MessageScheduleConfig {
             let b = meta.query_advice(a_4, Rotation::next()); // 6-bit chunk
             let c = meta.query_advice(a_3, Rotation::cur()); // 1-bit chunk
             // let tag_c = meta.query_advice(a_0, Rotation::next());
-            let d = meta.query_advice(a_1, Rotation::cur()); // 56-bit chunk
-            let tag_d = meta.query_advice(a_0, Rotation::cur());
+            let d_lo = meta.query_advice(a_1, Rotation::cur()); // 28-bit chunk
+            let d_hi = meta.query_advice(a_1, Rotation::next()); // 28-bit chunk
+            let tag_d_lo = meta.query_advice(a_0, Rotation::cur());
+            let tag_d_hi = meta.query_advice(a_0, Rotation::next());
             let word = meta.query_advice(a_5, Rotation::cur());
 
-            ScheduleGate::s_decompose_1(s_decompose_1, a, b, c, d, tag_d, word)
+            ScheduleGate::s_decompose_1(s_decompose_1, a, b, c, d_lo, d_hi, tag_d_lo, tag_d_hi, word)
         });
 
         // s_decompose_2 for W_[14..65]
@@ -169,13 +171,15 @@ impl MessageScheduleConfig {
             // let tag_d = meta.query_advice(a_0, Rotation::cur());
             let e = meta.query_advice(a_1, Rotation::prev()); // 11-bit chunk
             let tag_e = meta.query_advice(a_0, Rotation::prev());
-            let f = meta.query_advice(a_1, Rotation::cur()); // 42-bit chunk
-            let tag_f = meta.query_advice(a_0, Rotation::cur());
+            let f_lo = meta.query_advice(a_1, Rotation::cur()); // 21-bit chunk
+            let f_hi = meta.query_advice(a_1, Rotation::next()); // 21-bit chunk
+            let tag_f_lo = meta.query_advice(a_0, Rotation::cur());
+            let tag_f_hi = meta.query_advice(a_0, Rotation::next());
             let g = meta.query_advice(a_3, Rotation::next()); // 3-bit chunk
             // let tag_g = meta.query_advice(a_0, Rotation::prev());
             let word = meta.query_advice(a_5, Rotation::cur());
 
-            ScheduleGate::s_decompose_2(s_decompose_2, a, b, c, d, e, tag_e, f, tag_f, g, word)
+            ScheduleGate::s_decompose_2(s_decompose_2, a, b, c, d, e, tag_e, f_lo, f_hi, tag_f_lo, tag_f_hi, g, word)
         });
 
         // s_decompose_3 for W_65 to W_77
@@ -185,12 +189,14 @@ impl MessageScheduleConfig {
             let a = meta.query_advice(a_4, Rotation::next()); // 6-bit chunk
             let b = meta.query_advice(a_1, Rotation::next()); // 13-bit chunk
             let tag_b = meta.query_advice(a_0, Rotation::next());
-            let c = meta.query_advice(a_1, Rotation::cur()); // 42-bit chunk
-            let tag_c = meta.query_advice(a_0, Rotation::cur());
+            let c_lo = meta.query_advice(a_1, Rotation::cur()); // 21-bit chunk
+            let c_hi = meta.query_advice(a_1, Rotation::next()); // 21-bit chunk
+            let tag_c_lo = meta.query_advice(a_0, Rotation::cur());
+            let tag_c_hi = meta.query_advice(a_0, Rotation::next());
             let d = meta.query_advice(a_3, Rotation::next()); // 3-bit chunk
             let word = meta.query_advice(a_5, Rotation::cur());
 
-            ScheduleGate::s_decompose_3(s_decompose_3, a, b, tag_b, c, tag_c, d, word)
+            ScheduleGate::s_decompose_3(s_decompose_3, a, b, tag_b, c_lo, c_hi, tag_c_lo, tag_c_hi, d, word)
         });
 
         // sigma_0 v1 on W_[1..14]
@@ -210,7 +216,8 @@ impl MessageScheduleConfig {
                 meta.query_advice(a_5, Rotation::prev()), // b_hi
                 meta.query_advice(a_6, Rotation::prev()), // spread_b_hi
                 meta.query_advice(a_4, Rotation::cur()),  // spread_c
-                meta.query_advice(a_5, Rotation::cur()),  // spread_d
+                meta.query_advice(a_5, Rotation::cur()),  // spread_d_lo
+                meta.query_advice(a_4, Rotation::next()),  // spread_d_hi
             )
         });
 
@@ -234,7 +241,8 @@ impl MessageScheduleConfig {
                 meta.query_advice(a_6, Rotation::next()), // spread_c
                 meta.query_advice(a_4, Rotation::cur()),  // spread_d
                 meta.query_advice(a_7, Rotation::cur()),  // spread_e
-                meta.query_advice(a_7, Rotation::next()), // spread_f
+                meta.query_advice(a_7, Rotation::next()), // spread_f_lo
+                meta.query_advice(a_7, Rotation::prev()), // spread_f_hi
                 meta.query_advice(a_5, Rotation::next()), // g
                 meta.query_advice(a_5, Rotation::cur()),  // spread_g
             )
@@ -260,7 +268,8 @@ impl MessageScheduleConfig {
                 meta.query_advice(a_6, Rotation::next()), // spread_c
                 meta.query_advice(a_4, Rotation::cur()),  // spread_d
                 meta.query_advice(a_7, Rotation::cur()),  // spread_e
-                meta.query_advice(a_7, Rotation::next()), // spread_f
+                meta.query_advice(a_7, Rotation::next()), // spread_f_lo
+                meta.query_advice(a_7, Rotation::prev()), // spread_f_hi
                 meta.query_advice(a_5, Rotation::next()), // g
                 meta.query_advice(a_5, Rotation::cur()),  // spread_g
             )
@@ -285,7 +294,8 @@ impl MessageScheduleConfig {
                 // meta.query_advice(a_5, Rotation::prev()), // b_mid
                 // meta.query_advice(a_6, Rotation::prev()), // spread_b_mid
                 // meta.query_advice(a_3, Rotation::next()), // c
-                meta.query_advice(a_5, Rotation::cur()), // spread_c
+                meta.query_advice(a_5, Rotation::cur()), // spread_c_lo
+                meta.query_advice(a_4, Rotation::cur()), // spread_c_hi
                 meta.query_advice(a_3, Rotation::next()),  // d
                 meta.query_advice(a_4, Rotation::next()), // spread_d
             )
@@ -400,7 +410,7 @@ impl MessageScheduleConfig {
 #[cfg(test)]
 mod tests {
     use super::super::{
-        super::BLOCK_SIZE, util::lebs2ip, BlockWord, SpreadTableChip, Table64Chip, Table64Config,
+        super::BLOCK_SIZE, util::lebs2ip, BlockWord, SpreadTableChip, Table32Chip, Table32Config,
     };
     use super::schedule_util::*;
     use halo2_proofs::{
@@ -415,7 +425,7 @@ mod tests {
         struct MyCircuit {}
 
         impl Circuit<pallas::Base> for MyCircuit {
-            type Config = Table64Config;
+            type Config = Table32Config;
             type FloorPlanner = SimpleFloorPlanner;
 
             fn without_witnesses(&self) -> Self {
@@ -423,7 +433,7 @@ mod tests {
             }
 
             fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
-                Table64Chip::configure(meta)
+                Table32Chip::configure(meta)
             }
 
             fn synthesize(
@@ -452,7 +462,7 @@ mod tests {
 
         let circuit: MyCircuit = MyCircuit {};
 
-        let prover = match MockProver::<pallas::Base>::run(63, &circuit, vec![]) {
+        let prover = match MockProver::<pallas::Base>::run(33, &circuit, vec![]) {
             Ok(prover) => prover,
             Err(e) => panic!("{:?}", e),
         };

@@ -56,7 +56,7 @@ const IV: [u64; STATE] = [
 ];
 
 #[derive(Clone, Copy, Debug, Default)]
-/// A word in a `Table64` message block.
+/// A word in a `Table32` message block.
 // TODO: Make the internals of this struct private.
 pub struct BlockWord(pub Value<u64>);
 
@@ -127,16 +127,6 @@ impl From<u64> for Bits<64> {
         Bits(i2lebsp::<64>(int.into()))
     }
 }    
-impl From<&Bits<128>> for u128 {
-    fn from(bits: &Bits<128>) -> u128 {
-        lebs2ip(&bits.0) as u128
-    }
-}
-impl From<u128> for Bits<128> {
-    fn from(int: u128) -> Bits<128> {
-        Bits(i2lebsp::<128>(int.into()))
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct AssignedBits<const LEN: usize>(AssignedCell<Bits<LEN>, pallas::Base>);
@@ -284,56 +274,24 @@ impl AssignedBits<64> {
     }
 }
 
-impl AssignedBits<128> {
-    fn value_u128(&self) -> Value<u128> {
-        self.value().map(|v| v.into())
-    }
-    fn assign<A, AR>(
-        region: &mut Region<'_, pallas::Base>,
-        annotation: A,
-        column: impl Into<Column<Any>>,
-        offset: usize,
-        value: Value<u128>,
-    ) -> Result<Self, Error>
-    where
-        A: Fn() -> AR,
-        AR: Into<String>,
-    {
-        let column: Column<Any> = column.into();
-        let value: Value<Bits<128>> = value.map(|v| v.into());
-        match column.column_type() {
-            Any::Advice => {
-                region.assign_advice(annotation, column.try_into().unwrap(), offset, || {
-                    value.clone()
-                })
-            }
-            Any::Fixed => {
-                region.assign_fixed(annotation, column.try_into().unwrap(), offset, || {
-                    value.clone()
-                })
-            }
-            _ => panic!("Cannot assign to instance column"),
-        }
-        .map(AssignedBits)
-    }
-}
 
-/// Configuration for a [`Table64Chip`].
+
+/// Configuration for a [`Table32Chip`].
 #[derive(Clone, Debug)]
-pub struct Table64Config {
+pub struct Table32Config {
     lookup: SpreadTableConfig,
     message_schedule: MessageScheduleConfig,
     compression: CompressionConfig,
 }
 /// A chip that implements SHA-512 with a maximum lookup table size of $2^32$.
 #[derive(Clone, Debug)]
-pub struct Table64Chip {
-    config: Table64Config,
+pub struct Table32Chip {
+    config: Table32Config,
     _marker: PhantomData<pallas::Base>,
 }
 
-impl Chip<pallas::Base> for Table64Chip {
-    type Config = Table64Config;
+impl Chip<pallas::Base> for Table32Chip {
+    type Config = Table32Config;
     type Loaded = ();
 
     fn config(&self) -> &Self::Config {
@@ -346,7 +304,7 @@ impl Chip<pallas::Base> for Table64Chip {
 }
 
 
-impl Table64Chip {
+impl Table32Chip {
     /// Reconstructs this chip from the given config.
     pub fn construct(config: <Self as Chip<pallas::Base>>::Config) -> Self {
         Self {
@@ -401,7 +359,7 @@ impl Table64Chip {
         let message_schedule =
             MessageScheduleConfig::configure(meta, lookup_inputs, message_schedule, extras);
 
-        Table64Config {
+        Table32Config {
             lookup,
             message_schedule,
             compression,
@@ -410,14 +368,14 @@ impl Table64Chip {
 
     /// Loads the lookup table required by this chip into the circuit.
     pub fn load(
-        config: Table64Config,
+        config: Table32Config,
         layouter: &mut impl Layouter<pallas::Base>,
     ) -> Result<(), Error> {
         SpreadTableChip::load(config.lookup, layouter)
     }
 }
 
-impl Sha512Instructions<pallas::Base> for Table64Chip {
+impl Sha512Instructions<pallas::Base> for Table32Chip {
     type State = State;
     type BlockWord = BlockWord;
 
@@ -465,8 +423,8 @@ impl Sha512Instructions<pallas::Base> for Table64Chip {
 }
 
 
-/// Common assignment patterns used by Table64 regions.
-trait Table64Assignment {
+/// Common assignment patterns used by Table32 regions.
+trait Table32Assignment {
     /// Assign cells for general spread computation used in sigma, ch, ch_neg, maj gates
     #[allow(clippy::too_many_arguments)]
     #[allow(clippy::type_complexity)]
@@ -549,7 +507,7 @@ trait Table64Assignment {
 #[cfg(feature = "test-dev-graph")]
 mod tests {
     use super::super::{Sha512, BLOCK_SIZE};
-    use super::{message_schedule::msg_schedule_test_input, Table64Chip, Table64Config};
+    use super::{message_schedule::msg_schedule_test_input, Table32Chip, Table32Config};
     use halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
         pasta::pallas,
@@ -562,7 +520,7 @@ mod tests {
         struct MyCircuit {}
 
         impl Circuit<pallas::Base> for MyCircuit {
-            type Config = Table64Config;
+            type Config = Table32Config;
             type FloorPlanner = SimpleFloorPlanner;
 
             fn without_witnesses(&self) -> Self {
@@ -570,7 +528,7 @@ mod tests {
             }
 
             fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
-                Table64Chip::configure(meta)
+                Table32Chip::configure(meta)
             }
 
             fn synthesize(
@@ -578,8 +536,8 @@ mod tests {
                 config: Self::Config,
                 mut layouter: impl Layouter<pallas::Base>,
             ) -> Result<(), Error> {
-                let table64_chip = Table64Chip::construct(config.clone());
-                Table64Chip::load(config, &mut layouter)?;
+                let table32_chip = Table32Chip::construct(config.clone());
+                Table32Chip::load(config, &mut layouter)?;
 
                 // Test vector: "abc"
                 let test_input = msg_schedule_test_input();
@@ -590,22 +548,22 @@ mod tests {
                     input.extend_from_slice(&test_input);
                 }
 
-                Sha512::digest(table64_chip, layouter.namespace(|| "'abc' * 63"), &input)?;
+                Sha512::digest(table32_chip, layouter.namespace(|| "'abc' * 63"), &input)?;
 
                 Ok(())
             }
         }
 
         let root =
-            BitMapBackend::new("sha-512-table64-chip-layout.png", (1024, 3480)).into_drawing_area();
+            BitMapBackend::new("sha-512-table32-chip-layout.png", (1024, 3480)).into_drawing_area();
         root.fill(&WHITE).unwrap();
         let root = root
-            .titled("64-bit Table SHA-512 Chip", ("sans-serif", 60))
+            .titled("32-bit Table SHA-512 Chip", ("sans-serif", 60))
             .unwrap();
 
         let circuit = MyCircuit {};
         halo2_proofs::dev::CircuitLayout::default()
-            .render::<pallas::Base, _, _>(65, &circuit, &root)
+            .render::<pallas::Base, _, _>(33, &circuit, &root)
             .unwrap();
     }
 }    

@@ -10,14 +10,14 @@ use halo2_proofs::{
 use std::convert::TryInto;
 use std::marker::PhantomData;
 
-const BITS_11: u128 = 1 << 11;
-const BITS_13: u128 = 1 << 13;
-const BITS_14: u128 = 1 << 14;
-const BITS_23: u128 = 1 << 23;
-const BITS_25: u128 = 1 << 25;
-const BITS_28: u128 = 1 << 28;
-const BITS_42: u128 = 1 << 42;
-const BITS_56: u128 = 1 << 56;
+const BITS_11: u64 = 1 << 11;
+const BITS_13: u64 = 1 << 13;
+const BITS_14: u64 = 1 << 14;
+const BITS_21: u64 = 1 << 21;
+const BITS_23: u64 = 1 << 23;
+const BITS_25: u64 = 1 << 25;
+const BITS_28: u64 = 1 << 28;
+
 
 /// An input word into a lookup, containing (tag, dense, spread)
 #[derive(Copy, Clone, Debug)]
@@ -28,34 +28,32 @@ pub(super) struct SpreadWord<const DENSE: usize, const SPREAD: usize> {
 }
 
 /// Helper function that returns tag of 64-bit input
-pub fn get_tag(input: u128) -> u8 {
-    let input = input as u128;
+pub fn get_tag(input: u32) -> u8 {
+    let input = input as u64;
     if input < BITS_11 {
         0
     } else if input < BITS_13 {
         1
     } else if input < BITS_14 {
         2
-    } else if input < BITS_23 {
+    } else if input < BITS_21 {
         3
-    } else if input < BITS_25 {
+    } else if input < BITS_23 {
         4
-    } else if input < BITS_28 {
+    } else if input < BITS_25 {
         5
-    } else if input < BITS_42 {
+    } else if input < BITS_28 {
         6
-    } else if input < BITS_56 {
-        7
     } else {
-        8
+        7
     }
 }
 
 impl<const DENSE: usize, const SPREAD: usize> SpreadWord<DENSE, SPREAD> {
     pub(super) fn new(dense: [bool; DENSE]) -> Self {
-        assert!(DENSE <= 64);
+        assert!(DENSE <= 32);
         SpreadWord {
-            tag: get_tag(lebs2ip(&dense) as u128),
+            tag: get_tag(lebs2ip(&dense) as u32),
             dense,
             spread: spread_bits(dense),
         }
@@ -65,10 +63,10 @@ impl<const DENSE: usize, const SPREAD: usize> SpreadWord<DENSE, SPREAD> {
     where
         <T as TryInto<[bool; DENSE]>>::Error: std::fmt::Debug,
     {
-        assert!(DENSE <= 64);
+        assert!(DENSE <= 32);
         let dense: [bool; DENSE] = dense.try_into().unwrap();
         SpreadWord {
-            tag: get_tag(lebs2ip(&dense) as u128),
+            tag: get_tag(lebs2ip(&dense) as u32),
             dense,
             spread: spread_bits(dense),
         }
@@ -236,7 +234,7 @@ impl<F: PrimeField> SpreadTableChip<F> {
                 // We generate the row values lazily (we only need them during keygen).
                 let mut rows = SpreadTableConfig::generate::<F>();
 
-                for index in 0..(1_u128 << 64) {
+                for index in 0..(1_u64 << 32) {
                     let mut row = None;
                     table.assign_cell(
                         || "tag",
@@ -269,20 +267,20 @@ impl<F: PrimeField> SpreadTableChip<F> {
 
 impl SpreadTableConfig {
     fn generate<F: PrimeField>() -> impl Iterator<Item = (F, F, F)> {
-        (1..=(1_u128 << 64)).scan((F::ZERO, F::ZERO, F::ZERO), |(tag, dense, spread), i| {
+        (1..=(1 << 32)).scan((F::ZERO, F::ZERO, F::ZERO), |(tag, dense, spread), i| {
             // We computed this table row in the previous iteration.
             let res = (*tag, *dense, *spread);
 
             // i holds the zero-indexed row number for the next table row.
             match i {
-                BITS_11 | BITS_13 | BITS_14 | BITS_23 | BITS_25 | BITS_28 | BITS_42 | BITS_56 => *tag += F::ONE,
+                BITS_11 | BITS_13 | BITS_14 | BITS_21 | BITS_23 | BITS_25 | BITS_28 => *tag += F::ONE,
                 _ => (),
             }
             *dense += F::ONE;
             if i & 1 == 0 {
                 // On even-numbered rows we recompute the spread.
                 *spread = F::ZERO;
-                for b in 0..64 {
+                for b in 0..32 {
                     if (i >> b) & 1 != 0 {
                         *spread += F::from(1 << (2 * b));
                     }
@@ -410,82 +408,71 @@ mod tests {
                             F::from(0b100000000000000),
                             F::from(0b010000000000000000000000000000),
                         )?;
-                        // - 23-bit
+                        // - 21-bit
                         add_row(
                             F::from(3),
+                            F::from(0b111111111111111111111),
+                            F::from(0b010101010101010101010101010101010101010101),
+                        )?;
+                        add_row(
+                            F::from(4),
+                            F::from(0b1000000000000000000000),
+                            F::from(0b01000000000000000000000000000000000000000000),
+                        )?;
+                        // - 23-bit
+                        add_row(
+                            F::from(4),
                             F::from(0b11111111111111111111111),
                             F::from(0b0101010101010101010101010101010101010101010101),
                         )?;
                         add_row(
-                            F::from(4),
+                            F::from(5),
                             F::from(0b100000000000000000000000),
                             F::from(0b010000000000000000000000000000000000000000000000),
                         )?;
                         // - 25-bit
                         add_row(
-                            F::from(4),
+                            F::from(5),
                             F::from(0b1111111111111111111111111),
                             F::from(0b01010101010101010101010101010101010101010101010101),
                         )?;
                         add_row(
-                            F::from(5),
+                            F::from(6),
                             F::from(0b10000000000000000000000000),
                             F::from(0b0100000000000000000000000000000000000000000000000000),
                         )?;
                         // - 28-bit
                         add_row(
-                            F::from(5),
+                            F::from(6),
                             F::from(0b1111111111111111111111111111),
                             F::from(0b01010101010101010101010101010101010101010101010101010101),
                         )?;
                         add_row(
-                            F::from(6),
+                            F::from(7),
                             F::from(0b10000000000000000000000000000),
                             F::from(0b0100000000000000000000000000000000000000000000000000000000),
                         )?;
-                        // - 42-bit
-                        add_row(
-                            F::from(6),
-                            F::from(0b111111111111111111111111111111111111111111),
-                            F::from_u128(0b010101010101010101010101010101010101010101010101010101010101010101010101010101010101),
-                        )?;
-                        add_row(
-                            F::from(7),
-                            F::from(0b1000000000000000000000000000000000000000000),
-                            F::from_u128(0b01000000000000000000000000000000000000000000000000000000000000000000000000000000000000),
-                        )?;
-                        // - 56-bit
-                        add_row(
-                            F::from(7),
-                            F::from(0b11111111111111111111111111111111111111111111111111111111),
-                            F::from_u128(0b0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101),
-                        )?;
-                        add_row(
-                            F::from(8),
-                            F::from(0b100000000000000000000000000000000000000000000000000000000),
-                            F::from_u128(0b010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000),
-                        )?;
+
 
                         // Test random lookup values
                         let mut rng = rand::thread_rng();
 
-                        fn interleave_u64_with_zeros(word: u64) -> u128 {
-                            let mut word: u128 = word.into();
-                            word = (word ^ (word << 32)) & 0xffffffff00000000ffffffff;
-                            word = (word ^ (word << 16)) & 0xffff0000ffff0000ffff0000ffff;
-                            word = (word ^ (word << 8)) & 0xff00ff00ff00ff00ff00ff00ff00ff;
-                            word = (word ^ (word << 4)) & 0xf0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f;
-                            word = (word ^ (word << 2)) & 0x33333333333333333333333333333333;
-                            word = (word ^ (word << 1)) & 0x55555555555555555555555555555555;
+                        fn interleave_u32_with_zeros(word: u32) -> u64 {
+                            let mut word: u64 = word.into();
+                            word = (word ^ (word << 16)) & 0x0000ffff0000ffff;
+                            word = (word ^ (word << 8)) & 0x00ff00ff00ff00ff;
+                            word = (word ^ (word << 4)) & 0x0f0f0f0f0f0f0f0f;
+                            word = (word ^ (word << 2)) & 0x3333333333333333;
+                            word = (word ^ (word << 1)) & 0x5555555555555555;
                             word
                         }
 
                         for _ in 0..10 {
-                            let word: u64 = rng.gen();
+                            let word: u32 = rng.gen();
                             add_row(
-                                F::from(u64::from(get_tag(word as u128))),
+                                F::from(u64::from(get_tag(word))),
                                 F::from(u64::from(word)),
-                                F::from_u128(u128::from(interleave_u64_with_zeros(word))),
+                                F::from(u64::from(interleave_u32_with_zeros(word))),
                             )?;
                         }
 
@@ -497,7 +484,7 @@ mod tests {
 
         let circuit: MyCircuit = MyCircuit {};
 
-        let prover = match MockProver::<Fp>::run(65, &circuit, vec![]) {
+        let prover = match MockProver::<Fp>::run(33, &circuit, vec![]) {
             Ok(prover) => prover,
             Err(e) => panic!("{:?}", e),
         };

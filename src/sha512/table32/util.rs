@@ -3,7 +3,7 @@ use halo2_proofs::circuit::Value;
 
 pub const MASK_EVEN_64: u64= 0x5555555555555555;
 
-/// The sequence of bits representing a u128 in little-endian order.
+/// The sequence of bits representing a u64 in little-endian order.
 ///
 /// # Panics
 ///
@@ -52,7 +52,7 @@ pub fn spread_bits<const DENSE: usize, const SPREAD: usize>(
     bits: impl Into<[bool; DENSE]>,
 ) -> [bool; SPREAD] {
     assert_eq!(DENSE * 2, SPREAD);
-    assert!(DENSE <= 64);
+    assert!(DENSE <= 32);
 
     let bits: [bool; DENSE] = bits.into();
     let mut spread = [false; SPREAD];
@@ -101,17 +101,17 @@ pub fn odd_bits<const LEN: usize, const HALF: usize>(bits: [bool; LEN]) -> [bool
 
 /// Given a vector of words as vec![(lo: u32, hi: u32)], returns their sum: u64, along
 /// with a carry bit.
-pub fn sum_with_carry(words: Vec<(Value<u32>, Value<u32>)>) -> (Value<u64>, Value<u128>) {
-    let words_lo: Value<Vec<u128>> = words.iter().map(|(lo, _)| lo.map(|lo| lo as u128)).collect();
-    let words_hi: Value<Vec<u128>> = words.iter().map(|(_, hi)| hi.map(|hi| hi as u128)).collect();
+pub fn sum_with_carry(words: Vec<(Value<u32>, Value<u32>)>) -> (Value<u64>, Value<u64>) {
+    let words_lo: Value<Vec<u64>> = words.iter().map(|(lo, _)| lo.map(|lo| lo as u64)).collect();
+    let words_hi: Value<Vec<u64>> = words.iter().map(|(_, hi)| hi.map(|hi| hi as u64)).collect();
 
-    let sum: Value<u128> = {
-        let sum_lo: Value<u128> = words_lo.map(|vec| vec.iter().sum());
-        let sum_hi: Value<u128> = words_hi.map(|vec| vec.iter().sum());
+    let sum: Value<u64> = {
+        let sum_lo: Value<u64> = words_lo.map(|vec| vec.iter().sum());
+        let sum_hi: Value<u64> = words_hi.map(|vec| vec.iter().sum());
         sum_lo.zip(sum_hi).map(|(lo, hi)| lo + (1 << 32) * hi)
     };
 
-    let carry = sum.map(|sum| sum >> 64);
+    let carry = sum.map(|sum| (sum as u128 >> 64) as u64);
     let sum = sum.map(|sum| sum as u64);
 
     (sum, carry)
