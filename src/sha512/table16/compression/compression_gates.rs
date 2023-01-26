@@ -16,9 +16,12 @@ impl<F: PrimeField> CompressionGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_decompose_abcd(
         s_decompose_abcd: Expression<F>,
-        a: Expression<F>,
-        spread_a: Expression<F>,
-        tag_a: Expression<F>,
+        a_lo: Expression<F>,
+        spread_a_lo: Expression<F>,
+        tag_a_lo: Expression<F>,
+        a_hi: Expression<F>,
+        spread_a_hi: Expression<F>,
+        tag_a_hi: Expression<F>,
         b_lo: Expression<F>,
         spread_b_lo: Expression<F>,
         b_hi: Expression<F>,
@@ -27,9 +30,12 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_c_lo: Expression<F>,
         c_hi: Expression<F>,
         spread_c_hi: Expression<F>,
-        d: Expression<F>,
-        spread_d: Expression<F>,
-        tag_d: Expression<F>,
+        d_lo: Expression<F>,
+        spread_d_lo: Expression<F>,
+        tag_d_lo: Expression<F>,
+        d_hi: Expression<F>,
+        spread_d_hi: Expression<F>,
+        tag_d_hi: Expression<F>,
         word_lo: Expression<F>,
         spread_word_lo: Expression<F>,
         word_hi: Expression<F>,
@@ -50,30 +56,38 @@ impl<F: PrimeField> CompressionGate<F> {
                     spread_c_hi.clone(),
                 ))
                 .chain(Gate::two_bit_spread_and_range(c_lo.clone(), spread_c_lo.clone()));
-        let range_check_tag_a = Gate::range_check(tag_a, 0, 6);
-        let range_check_tag_d = Gate::range_check(tag_d, 0, 5);
-        let dense_check = a
+        let range_check_tag_a_lo = Gate::range_check(tag_a_lo, 0, 3);
+        let range_check_tag_a_hi = Gate::range_check(tag_a_hi, 0, 3);
+        let range_check_tag_d_lo = Gate::range_check(tag_d_lo, 0, 3);
+        let range_check_tag_d_hi = Gate::range_check(tag_d_hi, 0, 1);
+        let dense_check = a_lo
+            + a_hi * F::from(1 << 14)
             + b_lo * F::from(1 << 28)
             + b_hi * F::from(1 << 31)
             + c_lo * F::from(1 << 34)
             + c_hi * F::from(1 << 36)
-            + d * F::from(1 << 39)
+            + d_lo * F::from(1 << 50)
+            + d_hi * F::from(1 << 61)
             + word_lo * (-F::ONE)
             + word_hi * F::from(1 << 32) * (-F::ONE);
-        let spread_check = spread_a
+        let spread_check = spread_a_lo
+            + spread_a_hi * F::from(1 << 28)
             + spread_b_lo * F::from(1 << 56)
             + spread_b_hi * F::from(1 << 62)
             + spread_c_lo * F::from_u128(1 << 68)
             + spread_c_hi * F::from_u128(1 << 72)
-            + spread_d * F::from_u128(1 << 78)
+            + spread_d_lo * F::from_u128(1 << 78)
+            + spread_d_hi * F::from_u128(1 << 106)
             + spread_word_lo * (-F::ONE)
             + spread_word_hi * F::from_u128(1 << 64) * (-F::ONE);
 
         Constraints::with_selector(
             s_decompose_abcd,
             check_spread_and_range
-                .chain(Some(("range_check_tag_a", range_check_tag_a)))
-                .chain(Some(("range_check_tag_d", range_check_tag_d)))
+                .chain(Some(("range_check_tag_a_lo", range_check_tag_a_lo)))
+                .chain(Some(("range_check_tag_a_hi", range_check_tag_a_hi)))
+                .chain(Some(("range_check_tag_d_lo", range_check_tag_d_lo)))
+                .chain(Some(("range_check_tag_d_hi", range_check_tag_d_hi)))
                 .chain(Some(("dense_check", dense_check)))
                 .chain(Some(("spread_check", spread_check))),
         )
@@ -91,12 +105,18 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_b_lo: Expression<F>,
         b_hi: Expression<F>,
         spread_b_hi: Expression<F>,
-        c: Expression<F>,
-        spread_c: Expression<F>,
-        tag_c: Expression<F>,
-        d: Expression<F>,
-        spread_d: Expression<F>,
-        tag_d: Expression<F>,
+        c_lo: Expression<F>,
+        spread_c_lo: Expression<F>,
+        tag_c_lo: Expression<F>,
+        c_hi: Expression<F>,
+        spread_c_hi: Expression<F>,
+        tag_c_hi: Expression<F>,
+        d_lo: Expression<F>,
+        spread_d_lo: Expression<F>,
+        tag_d_lo: Expression<F>,
+        d_hi: Expression<F>,
+        spread_d_hi: Expression<F>,
+        tag_d_hi: Expression<F>,
         word_lo: Expression<F>,
         spread_word_lo: Expression<F>,
         word_hi: Expression<F>,
@@ -115,21 +135,27 @@ impl<F: PrimeField> CompressionGate<F> {
                     b_hi.clone(),
                     spread_b_hi.clone(),
                 ));
-        let range_check_tag_a = Gate::range_check(tag_a, 0, 2);        
-        let range_check_tag_c = Gate::range_check(tag_c, 0, 4);
-        let range_check_tag_d = Gate::range_check(tag_d, 0, 4);
+        let range_check_tag_a = Gate::range_check(tag_a, 0, 3);        
+        let range_check_tag_c_lo = Gate::range_check(tag_c_lo, 0, 2);
+        let range_check_tag_c_hi = Gate::range_check(tag_c_hi, 0, 0);
+        let range_check_tag_d_lo = Gate::range_check(tag_d_lo, 0, 2);
+        let range_check_tag_d_hi = Gate::range_check(tag_d_hi, 0, 0);
         let dense_check = a
             + b_lo * F::from(1 << 14)
             + b_hi * F::from(1 << 16)
-            + c * F::from(1 << 18)
-            + d * F::from(1 << 41)
+            + c_lo * F::from(1 << 18)
+            + c_hi * F::from(1 << 31)
+            + d_lo * F::from(1 << 41)
+            + d_hi * F::from(1 << 54)
             + word_lo * (-F::ONE)
             + word_hi * F::from(1 << 32) * (-F::ONE);
         let spread_check = spread_a
             + spread_b_lo * F::from(1 << 28)
             + spread_b_hi * F::from(1 << 32)
-            + spread_c * F::from(1 << 36)
-            + spread_d * F::from_u128(1 << 82)
+            + spread_c_lo * F::from(1 << 36)
+            + spread_c_hi * F::from(1 << 62)
+            + spread_d_lo * F::from_u128(1 << 82)
+            + spread_d_hi * F::from_u128(1 << 108)
             + spread_word_lo * (-F::ONE)
             + spread_word_hi * F::from_u128(1 << 64) * (-F::ONE);
 
@@ -137,8 +163,10 @@ impl<F: PrimeField> CompressionGate<F> {
             s_decompose_efgh,
             check_spread_and_range
                 .chain(Some(("range_check_tag_a", range_check_tag_a)))
-                .chain(Some(("range_check_tag_c", range_check_tag_c)))
-                .chain(Some(("range_check_tag_d", range_check_tag_d)))
+                .chain(Some(("range_check_tag_c_lo", range_check_tag_c_lo)))
+                .chain(Some(("range_check_tag_c_hi", range_check_tag_c_hi)))
+                .chain(Some(("range_check_tag_d_lo", range_check_tag_d_lo)))
+                .chain(Some(("range_check_tag_d_hi", range_check_tag_d_hi)))
                 .chain(Some(("dense_check", dense_check)))
                 .chain(Some(("spread_check", spread_check))),
         )
@@ -153,12 +181,14 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_r0_odd: Expression<F>,
         spread_r1_even: Expression<F>,
         spread_r1_odd: Expression<F>,
-        spread_a: Expression<F>,
+        spread_a_lo: Expression<F>,
+        spread_a_hi: Expression<F>,
         spread_b_lo: Expression<F>,
         spread_b_hi: Expression<F>,
         spread_c_lo: Expression<F>,
         spread_c_hi: Expression<F>,
-        spread_d: Expression<F>,
+        spread_d_lo: Expression<F>,
+        spread_d_hi: Expression<F>,
     ) -> Option<(&'static str, Expression<F>)> {
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
@@ -167,16 +197,22 @@ impl<F: PrimeField> CompressionGate<F> {
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c_lo.clone() * F::from(1 << 12)
             + spread_c_hi.clone() * F::from(1 << 18)
-            + spread_d.clone() * F::from(1 << 22)
-            + spread_a.clone() * F::from_u128(1 << 72);
+            + spread_d_lo.clone() * F::from(1 << 22)
+            + spread_d_hi.clone() * F::from(1 << 50)
+            + spread_a_lo.clone() * F::from_u128(1 << 72)
+            + spread_a_hi.clone() * F::from_u128(1 << 100);
         let xor_1 = spread_c_lo.clone()
             + spread_c_hi.clone() * F::from(1 << 6)
-            + spread_d.clone() * F::from(1 << 10)
-            + spread_a.clone() * F::from(1 << 60)
+            + spread_d_lo.clone() * F::from(1 << 10)
+            + spread_d_hi.clone() * F::from(1 << 38)
+            + spread_a_lo.clone() * F::from(1 << 60)
+            + spread_a_hi.clone() * F::from_u128(1 << 88)
             + spread_b_lo.clone() * F::from_u128(1 << 116)
             + spread_b_hi.clone() * F::from_u128(1 << 122);
-        let xor_2 = spread_d
-            + spread_a * F::from(1 << 50)
+        let xor_2 = spread_d_lo
+            + spread_d_hi * F::from(1 << 28)
+            + spread_a_lo * F::from(1 << 50)
+            + spread_a_hi * F::from_u128(1 << 78)
             + spread_b_lo * F::from_u128(1 << 106)
             + spread_b_hi * F::from_u128(1 << 112)
             + spread_c_lo * F::from_u128(1 << 118)
@@ -199,8 +235,10 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_a: Expression<F>,
         spread_b_lo: Expression<F>,
         spread_b_hi: Expression<F>,
-        spread_c: Expression<F>,
-        spread_d: Expression<F>,
+        spread_c_lo: Expression<F>,
+        spread_c_hi: Expression<F>,
+        spread_d_lo: Expression<F>,
+        spread_d_hi: Expression<F>,
     ) -> Option<(&'static str, Expression<F>)> {
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
@@ -208,19 +246,25 @@ impl<F: PrimeField> CompressionGate<F> {
 
         let xor_0 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 4)
-            + spread_c.clone() * F::from(1 << 8)
-            + spread_d.clone() * F::from(1 << 54)
+            + spread_c_lo.clone() * F::from(1 << 8)
+            + spread_c_hi.clone() * F::from(1 << 34)
+            + spread_d_lo.clone() * F::from(1 << 54)
+            + spread_d_hi.clone() * F::from_u128(1 << 80)
             + spread_a.clone() * F::from_u128(1 << 100);
-        let xor_1 = spread_c.clone()
-            + spread_d.clone() * F::from(1 << 46)
+        let xor_1 = spread_c_lo.clone()
+            + spread_c_hi.clone() * F::from(1 << 26)
+            + spread_d_lo.clone() * F::from(1 << 46)
+            + spread_d_hi.clone() * F::from_u128(1 << 72)
             + spread_a.clone() * F::from_u128(1 << 92)
             + spread_b_lo.clone() * F::from_u128(1 << 120)
             + spread_b_hi.clone() * F::from_u128(1 << 124);
-        let xor_2 = spread_d
+        let xor_2 = spread_d_lo
+            + spread_d_hi * F::from(1 << 26)
             + spread_a * F::from(1 << 46)
             + spread_b_lo * F::from_u128(1 << 74)
             + spread_b_hi * F::from_u128(1 << 78)
-            + spread_c * F::from_u128(1 << 82);
+            + spread_c_lo * F::from_u128(1 << 82)
+            + spread_c_hi * F::from_u128(1 << 108);
         let xor = xor_0 + xor_1 + xor_2;
         let check = spread_witness + (xor * -F::ONE);
 

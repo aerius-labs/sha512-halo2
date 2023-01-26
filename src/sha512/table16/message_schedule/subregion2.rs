@@ -1,4 +1,4 @@
-use super::super::{util::*, AssignedBits, Bits, SpreadVar, SpreadWord, Table32Assignment};
+use super::super::{util::*, AssignedBits, Bits, SpreadVar, SpreadWord, Table16Assignment};
 use super::{schedule_util::*, MessageScheduleConfig, MessageWord};
 use ff::PrimeField;
 use halo2_proofs::{
@@ -18,12 +18,16 @@ pub struct Subregion2Word {
     c: AssignedBits<1>,
     d: AssignedBits<1>,
     _e: AssignedBits<11>,
-    _f_lo: AssignedBits<21>,
-    _f_hi: AssignedBits<21>,
+    _f_lo_lo: AssignedBits<11>,
+    _f_lo_hi: AssignedBits<10>,
+    _f_hi_lo: AssignedBits<11>,
+    _f_hi_hi: AssignedBits<10>,
     g: AssignedBits<3>,
     spread_e: AssignedBits<22>,
-    spread_f_lo: AssignedBits<42>,
-    spread_f_hi: AssignedBits<42>,
+    spread_f_lo_lo: AssignedBits<22>,
+    spread_f_lo_hi: AssignedBits<20>,
+    spread_f_hi_lo: AssignedBits<22>,
+    spread_f_hi_hi: AssignedBits<20>,
 }
 
 impl Subregion2Word {
@@ -47,12 +51,20 @@ impl Subregion2Word {
         self.spread_e.value().map(|v| v.0)
     }
 
-    fn spread_f_lo(&self) -> Value<[bool; 42]> {
-        self.spread_f_lo.value().map(|v| v.0)
+    fn spread_f_lo_lo(&self) -> Value<[bool; 22]> {
+        self.spread_f_lo_lo.value().map(|v| v.0)
     }
 
-    fn spread_f_hi(&self) -> Value<[bool; 42]> {
-        self.spread_f_hi.value().map(|v| v.0)
+    fn spread_f_lo_hi(&self) -> Value<[bool; 20]> {
+        self.spread_f_lo_hi.value().map(|v| v.0)
+    }
+
+    fn spread_f_hi_lo(&self) -> Value<[bool; 22]> {
+        self.spread_f_hi_lo.value().map(|v| v.0)
+    }
+
+    fn spread_f_hi_hi(&self) -> Value<[bool; 20]> {
+        self.spread_f_hi_hi.value().map(|v| v.0)
     }
 
     fn spread_g(&self) -> Value<[bool; 6]> {
@@ -65,15 +77,19 @@ impl Subregion2Word {
             .zip(self.spread_c())
             .zip(self.spread_d())
             .zip(self.spread_e())
-            .zip(self.spread_f_lo())
-            .zip(self.spread_f_hi())
+            .zip(self.spread_f_lo_lo())
+            .zip(self.spread_f_lo_hi())
+            .zip(self.spread_f_hi_lo())
+            .zip(self.spread_f_hi_hi())
             .zip(self.spread_g())
-            .map(|(((((((a, b), c), d), e), f_lo), f_hi), g)| {
+            .map(|(((((((((a, b), c), d), e), f_lo_lo), f_lo_hi), f_hi_lo), f_hi_hi), g)| {
                 let xor_0 = d
                     .iter()
                     .chain(e.iter())
-                    .chain(f_lo.iter())
-                    .chain(f_hi.iter())
+                    .chain(f_lo_lo.iter())
+                    .chain(f_lo_hi.iter())
+                    .chain(f_hi_lo.iter())
+                    .chain(f_hi_hi.iter())
                     .chain(g.iter())
                     .chain(std::iter::repeat(&false).take(2))
                     .chain(std::iter::repeat(&false).take(10))
@@ -86,8 +102,10 @@ impl Subregion2Word {
                     .chain(c.iter())
                     .chain(d.iter())
                     .chain(e.iter())
-                    .chain(f_lo.iter())
-                    .chain(f_hi.iter())
+                    .chain(f_lo_lo.iter())
+                    .chain(f_lo_hi.iter())
+                    .chain(f_hi_lo.iter())
+                    .chain(f_hi_hi.iter())
                     .chain(g.iter())
                     .chain(a.iter())
                     .copied()
@@ -95,8 +113,10 @@ impl Subregion2Word {
 
                 let xor_2 = e
                     .iter()
-                    .chain(f_lo.iter())
-                    .chain(f_hi.iter())
+                    .chain(f_lo_lo.iter())
+                    .chain(f_lo_hi.iter())
+                    .chain(f_hi_lo.iter())
+                    .chain(f_hi_hi.iter())
                     .chain(g.iter())
                     .chain(a.iter())
                     .chain(b.iter())
@@ -108,7 +128,6 @@ impl Subregion2Word {
                 let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
                 let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
                 let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
-
                 i2lebsp(xor_0 + xor_1 + xor_2)
             })
     }
@@ -119,25 +138,31 @@ impl Subregion2Word {
             .zip(self.spread_c())
             .zip(self.spread_d())
             .zip(self.spread_e())
-            .zip(self.spread_f_lo())
-            .zip(self.spread_f_hi())
+            .zip(self.spread_f_lo_lo())
+            .zip(self.spread_f_lo_hi())
+            .zip(self.spread_f_hi_lo())
+            .zip(self.spread_f_hi_hi())
             .zip(self.spread_g())
-            .map(|(((((((a, b), c), d), e), f_lo), f_hi), g)| {
+            .map(|(((((((((a, b), c), d), e), f_lo_lo), f_lo_hi), f_hi_lo), f_hi_hi), g)| {
                 let xor_0 = c
                     .iter()
                     .chain(d.iter())
                     .chain(e.iter())
-                    .chain(f_lo.iter())
-                    .chain(f_hi.iter())
+                    .chain(f_lo_lo.iter())
+                    .chain(f_lo_hi.iter())
+                    .chain(f_hi_lo.iter())
+                    .chain(f_hi_hi.iter())
                     .chain(g.iter())
                     .chain(std::iter::repeat(&false).take(2))
                     .chain(std::iter::repeat(&false).take(10))
                     .copied()
                     .collect::<Vec<_>>();
 
-                let xor_1 = f_lo
+                let xor_1 = f_lo_lo
                     .iter()
-                    .chain(f_hi.iter())
+                    .chain(f_lo_hi.iter())
+                    .chain(f_hi_lo.iter())
+                    .chain(f_hi_hi.iter())
                     .chain(g.iter())
                     .chain(a.iter())
                     .chain(b.iter())
@@ -154,15 +179,17 @@ impl Subregion2Word {
                     .chain(c.iter())
                     .chain(d.iter())
                     .chain(e.iter())
-                    .chain(f_lo.iter())
-                    .chain(f_hi.iter())
+                    .chain(f_lo_lo.iter())
+                    .chain(f_lo_hi.iter())
+                    .chain(f_hi_lo.iter())
+                    .chain(f_hi_hi.iter())
                     .copied()
                     .collect::<Vec<_>>();
-
+                // println!("{:?}",self.spread_f_hi_hi());
                 let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
                 let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
                 let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
-
+                // println!("{},{},{}",xor_0,xor_1,xor_2);
                 i2lebsp(xor_0 + xor_1 + xor_2)
             })
     }
@@ -266,6 +293,8 @@ impl MessageScheduleConfig {
                     w_halves[new_word_idx - 16].1.value_u32(),
                 ),
             ]);
+            // println!("{:?},wowo, {:?}",w_halves[new_word_idx - 16].0.value_u32(),w_halves[new_word_idx - 16].1.value_u32());
+            // println!("{:?},yoyo, {:?}",lower_sigma_1_v2_results[new_word_idx - 16].0.value_u32(),lower_sigma_1_v2_results[new_word_idx - 16].1.value_u32());
 
             // Assign W_i, carry_i
             region.assign_advice(
@@ -320,12 +349,14 @@ impl MessageScheduleConfig {
                 vec![word[6]],
                 vec![word[7]],
                 word[8..19].to_vec(),
-                word[19..40].to_vec(),
-                word[40..61].to_vec(),
+                word[19..30].to_vec(),
+                word[30..40].to_vec(),
+                word[40..51].to_vec(),
+                word[51..61].to_vec(),
                 word[61..64].to_vec(),
             ]
         });
-        let pieces = pieces.transpose_vec(8);
+        let pieces = pieces.transpose_vec(10);
 
         // Rename these here for ease of matching the gates to the specification.
         let a_3 = self.extras[0];
@@ -342,22 +373,30 @@ impl MessageScheduleConfig {
         let c = AssignedBits::<1>::assign_bits(region, || "c", a_4, row - 1, pieces[2].clone())?;
 
         // Assign `d` (1-bit piece)
-        let d = AssignedBits::<1>::assign_bits(region, || "d", a_3, row + 1, pieces[3].clone())?;
+        let d = AssignedBits::<1>::assign_bits(region, || "d", a_4, row + 1, pieces[3].clone())?;
 
         // Assign `e` (11-bit piece)
         let spread_e = pieces[4].clone().map(SpreadWord::try_new);
-        let spread_e = SpreadVar::with_lookup(region, &self.lookup, row, spread_e)?;
+        let spread_e = SpreadVar::with_lookup(region, &self.lookup, row - 1, spread_e)?;
 
-        // Assign `f_lo` (21-bit piece)
-        let spread_f_lo = pieces[5].clone().map(SpreadWord::try_new);
-        let spread_f_lo = SpreadVar::with_lookup(region, &self.lookup, row - 1, spread_f_lo)?;
+        // Assign `f_lo_lo` (11-bit piece)
+        let spread_f_lo_lo = pieces[5].clone().map(SpreadWord::try_new);
+        let spread_f_lo_lo = SpreadVar::with_lookup(region, &self.lookup, row, spread_f_lo_lo)?;
 
-        // Assign `f_hi` (21-bit piece)
-        let spread_f_hi = pieces[6].clone().map(SpreadWord::try_new);
-        let spread_f_hi = SpreadVar::with_lookup(region, &self.lookup, row + 2, spread_f_hi)?;
+        // Assign `f_lo_hi` (10-bit piece)
+        let spread_f_lo_hi = pieces[6].clone().map(SpreadWord::try_new);
+        let spread_f_lo_hi = SpreadVar::with_lookup(region, &self.lookup, row + 1, spread_f_lo_hi)?;
+
+        // Assign `f_hi_lo` (11-bit piece)
+        let spread_f_hi_lo = pieces[7].clone().map(SpreadWord::try_new);
+        let spread_f_hi_lo = SpreadVar::with_lookup(region, &self.lookup, row + 2, spread_f_hi_lo)?;
+
+        // Assign `f_hi_hi` (10-bit piece)
+        let spread_f_hi_hi = pieces[8].clone().map(SpreadWord::try_new);
+        let spread_f_hi_hi = SpreadVar::with_lookup(region, &self.lookup, row + 3, spread_f_hi_hi)?;
 
         // Assign `g` (3-bit piece) lookup
-        let g = AssignedBits::<3>::assign_bits(region, || "g", a_4, row + 1, pieces[7].clone())?;
+        let g = AssignedBits::<3>::assign_bits(region, || "g", a_3, row + 1, pieces[9].clone())?;
 
         Ok(Subregion2Word {
             index,
@@ -366,12 +405,16 @@ impl MessageScheduleConfig {
             c,
             d,
             _e: spread_e.dense,
-            _f_lo: spread_f_lo.dense,
-            _f_hi: spread_f_hi.dense,
+            _f_lo_lo: spread_f_lo_lo.dense,
+            _f_lo_hi: spread_f_lo_hi.dense,
+            _f_hi_lo: spread_f_hi_lo.dense,
+            _f_hi_hi: spread_f_hi_hi.dense,
             g,
             spread_e: spread_e.spread,
-            spread_f_lo: spread_f_lo.spread,
-            spread_f_hi: spread_f_hi.spread,
+            spread_f_lo_lo: spread_f_lo_lo.spread,
+            spread_f_lo_hi: spread_f_lo_hi.spread,
+            spread_f_hi_lo: spread_f_hi_lo.spread,
+            spread_f_hi_hi: spread_f_hi_hi.spread,
         })
     }
 
@@ -391,7 +434,7 @@ impl MessageScheduleConfig {
         let a_7 = self.extras[3];
 
         // Assign `a` and copy constraint
-        word.a.copy_advice(|| "a", region, a_3, row + 1)?;
+        word.a.copy_advice(|| "a", region, a_4, row + 1)?;
 
         // Split `b` (5-bit chunk) into `b_hi` and `b_lo`
         // Assign `b_lo`, `spread_b_lo`
@@ -406,7 +449,7 @@ impl MessageScheduleConfig {
 
         // Split `b` (2-bit chunk) into `b_hi` and `b_lo`
         // Assign `b_hi`, `spread_b_hi`
-        let b_hi: Value<[bool; 2]> = word.b.value().map(|b| b.0[2..].try_into().unwrap());
+        let b_hi: Value<[bool; 2]> = word.b.value().map(|b| b.0[3..5].try_into().unwrap());
         let spread_b_hi = b_hi.map(spread_bits);
         {
             AssignedBits::<2>::assign_bits(region, || "b_hi", a_5, row - 1, b_hi)?;
@@ -418,7 +461,7 @@ impl MessageScheduleConfig {
         word.b.copy_advice(|| "b", region, a_6, row)?;
 
         // Assign `c` and copy constraint
-        word.c.copy_advice(|| "c", region, a_5, row)?;
+        word.c.copy_advice(|| "c", region, a_6, row + 1)?;
 
         // Assign `d` and copy constraint
         word.d.copy_advice(|| "d", region, a_4, row)?;
@@ -426,17 +469,23 @@ impl MessageScheduleConfig {
         // Assign `e` and copy constraint
         word.spread_e.copy_advice(|| "spread_e", region, a_7, row)?;
 
-        // Assign `f_lo` and copy constraint
-        word.spread_f_lo.copy_advice(|| "spread_f_lo", region, a_7, row + 1)?;
+        // Assign `f_lo_lo` and copy constraint
+        word.spread_f_lo_lo.copy_advice(|| "spread_f_lo_lo", region, a_7, row + 1)?;
 
-        // Assign `f_hi` and copy constraint
-        word.spread_f_hi.copy_advice(|| "spread_f_hi", region, a_7, row - 1)?;
+        // Assign `f_lo_hi` and copy constraint
+        word.spread_f_lo_hi.copy_advice(|| "spread_f_lo_hi", region, a_7, row - 1)?;
+
+        // Assign `f_hi_lo` and copy constraint
+        word.spread_f_hi_lo.copy_advice(|| "spread_f_hi_lo", region, a_4, row + 1)?;
+
+        // Assign `f_hi_hi` and copy constraint
+        word.spread_f_hi_hi.copy_advice(|| "spread_f_hi_hi", region, a_4, row)?;
 
         // Assign `g` and copy constraint
-        word.g.copy_advice(|| "g", region, a_5, row+1)?;
+        word.g.copy_advice(|| "g", region, a_5, row + 1)?;
 
         // Witness `spread_g`
-        AssignedBits::<6>::assign_bits(region, || "spread_g", a_6, row + 1, word.spread_g())?;
+        AssignedBits::<6>::assign_bits(region, || "spread_g", a_5, row, word.spread_g())?;
 
         Ok(())
     }
@@ -489,6 +538,8 @@ impl MessageScheduleConfig {
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r = word.xor_sigma_1();
+
+        // println!("{:?}",r);
         let r_0: Value<[bool; 64]> = r.map(|r| r[..64].try_into().unwrap());
         let r_0_even = r_0.map(even_bits);
         let r_0_odd = r_0.map(odd_bits);

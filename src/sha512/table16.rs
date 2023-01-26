@@ -2,7 +2,6 @@ use std::convert::TryInto;
 use std::marker::PhantomData;
 
 use super::Sha512Instructions;
-use ff::PrimeField;
 use halo2_proofs::{
     circuit::{AssignedCell, Chip, Layouter, Region, Value},
     pasta::pallas,
@@ -56,7 +55,7 @@ const IV: [u64; STATE] = [
 ];
 
 #[derive(Clone, Copy, Debug, Default)]
-/// A word in a `Table32` message block.
+/// A word in a `Table16` message block.
 // TODO: Make the internals of this struct private.
 pub struct BlockWord(pub Value<u64>);
 
@@ -92,21 +91,20 @@ impl<const LEN: usize> From<&Bits<LEN>> for [bool; LEN] {
 
 impl<const LEN: usize> From<&Bits<LEN>> for Assigned<pallas::Base> {
     fn from(bits: &Bits<LEN>) -> Assigned<pallas::Base> {
-        assert!(LEN <= 128);
-        pallas::Base::from_u128(lebs2ip(&bits.0)).into()
+        assert!(LEN <= 64);
+        pallas::Base::from(lebs2ip(&bits.0) as u64).into()
     }
 }
-// impl From<&Bits<16>> for u16 {
-//     fn from(bits: &Bits<16>) -> u16 {
-//         lebs2ip(&bits.0) as u16
-//     }
-// }
-// ​
-// impl From<u16> for Bits<16> {
-//     fn from(int: u16) -> Bits<16> {
-//         Bits(i2lebsp::<16>(int.into()))
-//     }
-// }
+impl From<&Bits<16>> for u16 {
+    fn from(bits: &Bits<16>) -> u16 {
+        lebs2ip(&bits.0) as u16
+    }
+}
+impl From<u16> for Bits<16> {
+    fn from(int: u16) -> Bits<16> {
+        Bits(i2lebsp::<16>(int.into()))
+    }
+}
 impl From<&Bits<32>> for u32 {
     fn from(bits: &Bits<32>) -> u32 {
         lebs2ip(&bits.0) as u32
@@ -173,40 +171,39 @@ impl<const LEN: usize> AssignedBits<LEN> {
     }
 }
 
-// impl AssignedBits<16> {
-//     fn value_u16(&self) -> Value<u16> {
-//         self.value().map(|v| v.into())
-//     }
-// ​
-//     fn assign<A, AR>(
-//         region: &mut Region<'_, pallas::Base>,
-//         annotation: A,
-//         column: impl Into<Column<Any>>,
-//         offset: usize,
-//         value: Value<u16>,
-//     ) -> Result<Self, Error>
-//     where
-//         A: Fn() -> AR,
-//         AR: Into<String>,
-//     {
-//         let column: Column<Any> = column.into();
-//         let value: Value<Bits<16>> = value.map(|v| v.into());
-//         match column.column_type() {
-//             Any::Advice => {
-//                 region.assign_advice(annotation, column.try_into().unwrap(), offset, || {
-//                     value.clone()
-//                 })
-//             }
-//             Any::Fixed => {
-//                 region.assign_fixed(annotation, column.try_into().unwrap(), offset, || {
-//                     value.clone()
-//                 })
-//             }
-//             _ => panic!("Cannot assign to instance column"),
-//         }
-//         .map(AssignedBits)
-//     }
-// }
+impl AssignedBits<16> {
+    fn value_u16(&self) -> Value<u16> {
+        self.value().map(|v| v.into())
+    }
+    fn assign<A, AR>(
+        region: &mut Region<'_, pallas::Base>,
+        annotation: A,
+        column: impl Into<Column<Any>>,
+        offset: usize,
+        value: Value<u16>,
+    ) -> Result<Self, Error>
+    where
+        A: Fn() -> AR,
+        AR: Into<String>,
+    {
+        let column: Column<Any> = column.into();
+        let value: Value<Bits<16>> = value.map(|v| v.into());
+        match column.column_type() {
+            Any::Advice => {
+                region.assign_advice(annotation, column.try_into().unwrap(), offset, || {
+                    value.clone()
+                })
+            }
+            Any::Fixed => {
+                region.assign_fixed(annotation, column.try_into().unwrap(), offset, || {
+                    value.clone()
+                })
+            }
+            _ => panic!("Cannot assign to instance column"),
+        }
+        .map(AssignedBits)
+    }
+}
 impl AssignedBits<32> {
     fn value_u32(&self) -> Value<u32> {
         self.value().map(|v| v.into())
@@ -276,22 +273,22 @@ impl AssignedBits<64> {
 
 
 
-/// Configuration for a [`Table32Chip`].
+/// Configuration for a [`Table16Chip`].
 #[derive(Clone, Debug)]
-pub struct Table32Config {
+pub struct Table16Config {
     lookup: SpreadTableConfig,
     message_schedule: MessageScheduleConfig,
     compression: CompressionConfig,
 }
-/// A chip that implements SHA-512 with a maximum lookup table size of $2^32$.
+/// A chip that implements SHA-512 with a maximum lookup table size of $2^16$.
 #[derive(Clone, Debug)]
-pub struct Table32Chip {
-    config: Table32Config,
+pub struct Table16Chip {
+    config: Table16Config,
     _marker: PhantomData<pallas::Base>,
 }
 
-impl Chip<pallas::Base> for Table32Chip {
-    type Config = Table32Config;
+impl Chip<pallas::Base> for Table16Chip {
+    type Config = Table16Config;
     type Loaded = ();
 
     fn config(&self) -> &Self::Config {
@@ -304,7 +301,7 @@ impl Chip<pallas::Base> for Table32Chip {
 }
 
 
-impl Table32Chip {
+impl Table16Chip {
     /// Reconstructs this chip from the given config.
     pub fn construct(config: <Self as Chip<pallas::Base>>::Config) -> Self {
         Self {
@@ -359,7 +356,7 @@ impl Table32Chip {
         let message_schedule =
             MessageScheduleConfig::configure(meta, lookup_inputs, message_schedule, extras);
 
-        Table32Config {
+        Table16Config {
             lookup,
             message_schedule,
             compression,
@@ -368,14 +365,14 @@ impl Table32Chip {
 
     /// Loads the lookup table required by this chip into the circuit.
     pub fn load(
-        config: Table32Config,
+        config: Table16Config,
         layouter: &mut impl Layouter<pallas::Base>,
     ) -> Result<(), Error> {
         SpreadTableChip::load(config.lookup, layouter)
     }
 }
 
-impl Sha512Instructions<pallas::Base> for Table32Chip {
+impl Sha512Instructions<pallas::Base> for Table16Chip {
     type State = State;
     type BlockWord = BlockWord;
 
@@ -423,8 +420,37 @@ impl Sha512Instructions<pallas::Base> for Table32Chip {
 }
 
 
-/// Common assignment patterns used by Table32 regions.
-trait Table32Assignment {
+/// Common assignment patterns used by Table16 regions.
+trait Table16Assignment {
+    fn joindense(x :&SpreadVar<16,32>,y : &SpreadVar<16,32>) -> Value<[bool; 32]> {
+        x
+        .dense
+        .value()
+        .zip(y.dense.value())
+        .map(|(x, y)| {
+            x.iter()
+                .chain(y.iter())
+                .copied()
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap()
+        })
+    }
+    
+    fn joinspread(x :&SpreadVar<16,32>,y : &SpreadVar<16,32>) -> Value<[bool; 64]> {
+        x
+        .spread
+        .value()
+        .zip(y.spread.value())
+        .map(|(x, y)| {
+            x.iter()
+                .chain(y.iter())
+                .copied()
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap()
+        })
+    }
     /// Assign cells for general spread computation used in sigma, ch, ch_neg, maj gates
     #[allow(clippy::too_many_arguments)]
     #[allow(clippy::type_complexity)]
@@ -445,40 +471,96 @@ trait Table32Assignment {
         ),
         Error,
     > {
-        // Lookup R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
-        let r_0_even = SpreadVar::with_lookup(
+         // Lookup R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
+        let r_0_even_lo: Value<[bool; 16]> = r_0_even.map(|r_0_even| r_0_even[..16].try_into().unwrap());
+        let r_0_even_hi: Value<[bool; 16]> = r_0_even.map(|r_0_even| r_0_even[16..32].try_into().unwrap());
+       
+        let r_0_even_lo = SpreadVar::with_lookup(
             region,
             lookup,
             row - 1,
-            r_0_even.map(SpreadWord::<32, 64>::new),
+            r_0_even_lo.map(SpreadWord::<16, 32>::new),
         )?;
-        let r_0_odd =  SpreadVar::with_lookup(
+        let r_0_even_hi = SpreadVar::with_lookup(
             region,
             lookup,
             row,
-            r_0_odd.map(SpreadWord::<32, 64>::new),
+            r_0_even_hi.map(SpreadWord::<16, 32>::new),
         )?;
-        let r_1_even = SpreadVar::with_lookup(
+
+        let r_0_even_dense = Self::joindense(&r_0_even_lo,&r_0_even_hi);
+        let r_0_even_d = AssignedBits::<32>::assign_bits(region, || "r_0_even_d", a_3, row - 1, r_0_even_dense)?;
+
+
+        let r_0_odd_lo: Value<[bool; 16]> = r_0_odd.map(|r_0_odd| r_0_odd[..16].try_into().unwrap());
+        let r_0_odd_hi: Value<[bool; 16]> = r_0_odd.map(|r_0_odd| r_0_odd[16..32].try_into().unwrap());
+       
+        let r_0_odd_lo = SpreadVar::with_lookup(
             region,
             lookup,
             row + 1,
-            r_1_even.map(SpreadWord::<32, 64>::new),
+            r_0_odd_lo.map(SpreadWord::<16, 32>::new),
         )?;
-        let r_1_odd = SpreadVar::with_lookup(
+        let r_0_odd_hi = SpreadVar::with_lookup(
             region,
             lookup,
             row + 2,
-            r_1_odd.map(SpreadWord::<32, 64>::new),
+            r_0_odd_hi.map(SpreadWord::<16, 32>::new),
         )?;
 
+        let r_0_odd_dense = Self::joindense(&r_0_odd_lo,&r_0_odd_hi);
+        let r_0_odd_d = AssignedBits::<32>::assign_bits(region, || "r_0_odd_d", a_3, row + 1, r_0_odd_dense)?;
+
+        let r_1_even_lo: Value<[bool; 16]> = r_1_even.map(|r_1_even| r_1_even[..16].try_into().unwrap());
+        let r_1_even_hi: Value<[bool; 16]> = r_1_even.map(|r_1_even| r_1_even[16..32].try_into().unwrap());
+       
+        let r_1_even_lo = SpreadVar::with_lookup(
+            region,
+            lookup,
+            row + 3,
+            r_1_even_lo.map(SpreadWord::<16, 32>::new),
+        )?;
+        let r_1_even_hi = SpreadVar::with_lookup(
+            region,
+            lookup,
+            row + 4,
+            r_1_even_hi.map(SpreadWord::<16, 32>::new),
+        )?;
+
+        let r_1_even_dense = Self::joindense(&r_1_even_lo,&r_1_even_hi);
+        let r_1_even_d = AssignedBits::<32>::assign_bits(region, || "r_1_even_d", a_3, row + 3, r_1_even_dense)?;
+
+        let r_1_odd_lo: Value<[bool; 16]> = r_1_odd.map(|r_1_odd| r_1_odd[..16].try_into().unwrap());
+        let r_1_odd_hi: Value<[bool; 16]> = r_1_odd.map(|r_1_odd| r_1_odd[16..32].try_into().unwrap());
+       
+        let r_1_odd_lo = SpreadVar::with_lookup(
+            region,
+            lookup,
+            row + 5,
+            r_1_odd_lo.map(SpreadWord::<16, 32>::new),
+        )?;
+        let r_1_odd_hi = SpreadVar::with_lookup(
+            region,
+            lookup,
+            row + 6,
+            r_1_odd_hi.map(SpreadWord::<16, 32>::new),
+        )?;
+
+        let r_1_odd_dense = Self::joindense(&r_1_odd_lo,&r_1_odd_hi);
+        let r_1_odd_d = AssignedBits::<32>::assign_bits(region, || "r_1_odd_d", a_3, row + 5, r_1_odd_dense)?;
+
         // Assign and copy R_1^{odd}
-        r_1_odd
+        r_1_odd_lo
             .spread
-            .copy_advice(|| "Assign and copy R_1^{odd}", region, a_3, row)?;
+            .copy_advice(|| "Assign and copy R_1^{odd}_lo", region, a_3, row)?;
+
+        r_1_odd_hi
+            .spread
+            .copy_advice(|| "Assign and copy R_1^{odd}_hi", region, a_3, row + 1)?;
 
         Ok((
-            (r_0_even.dense, r_1_even.dense),
-            (r_0_odd.dense, r_1_odd.dense),
+            (r_0_even_d, r_1_even_d),
+            (r_0_odd_d, r_1_odd_d),
         ))
     }
 
@@ -507,7 +589,7 @@ trait Table32Assignment {
 #[cfg(feature = "test-dev-graph")]
 mod tests {
     use super::super::{Sha512, BLOCK_SIZE};
-    use super::{message_schedule::msg_schedule_test_input, Table32Chip, Table32Config};
+    use super::{message_schedule::msg_schedule_test_input, Table16Chip, Table16Config};
     use halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
         pasta::pallas,
@@ -520,7 +602,7 @@ mod tests {
         struct MyCircuit {}
 
         impl Circuit<pallas::Base> for MyCircuit {
-            type Config = Table32Config;
+            type Config = Table16Config;
             type FloorPlanner = SimpleFloorPlanner;
 
             fn without_witnesses(&self) -> Self {
@@ -528,7 +610,7 @@ mod tests {
             }
 
             fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
-                Table32Chip::configure(meta)
+                Table16Chip::configure(meta)
             }
 
             fn synthesize(
@@ -536,8 +618,8 @@ mod tests {
                 config: Self::Config,
                 mut layouter: impl Layouter<pallas::Base>,
             ) -> Result<(), Error> {
-                let table32_chip = Table32Chip::construct(config.clone());
-                Table32Chip::load(config, &mut layouter)?;
+                let table16_chip = Table16Chip::construct(config.clone());
+                Table16Chip::load(config, &mut layouter)?;
 
                 // Test vector: "abc"
                 let test_input = msg_schedule_test_input();
@@ -548,22 +630,22 @@ mod tests {
                     input.extend_from_slice(&test_input);
                 }
 
-                Sha512::digest(table32_chip, layouter.namespace(|| "'abc' * 63"), &input)?;
+                Sha512::digest(table16_chip, layouter.namespace(|| "'abc' * 63"), &input)?;
 
                 Ok(())
             }
         }
 
         let root =
-            BitMapBackend::new("sha-512-table32-chip-layout.png", (1024, 3480)).into_drawing_area();
+            BitMapBackend::new("sha-512-table16-chip-layout.png", (1024, 3480)).into_drawing_area();
         root.fill(&WHITE).unwrap();
         let root = root
-            .titled("32-bit Table SHA-512 Chip", ("sans-serif", 60))
+            .titled("16-bit Table SHA-512 Chip", ("sans-serif", 60))
             .unwrap();
 
         let circuit = MyCircuit {};
         halo2_proofs::dev::CircuitLayout::default()
-            .render::<pallas::Base, _, _>(33, &circuit, &root)
+            .render::<pallas::Base, _, _>(17, &circuit, &root)
             .unwrap();
     }
 }    
