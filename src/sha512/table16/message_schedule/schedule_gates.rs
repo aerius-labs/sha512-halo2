@@ -271,12 +271,15 @@ impl<F: PrimeField> ScheduleGate<F> {
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
         let check_spread_and_range =
             Gate::three_bit_spread_and_range(a_lo.clone(), spread_a_lo.clone())
-                .chain(Gate::three_bit_spread_and_range(
-                    a_hi.clone(),
-                    spread_a_hi.clone(),
-                ));
-        // a_lo + 2^3 * a_hi = b, on W_[49..77]
-        let check_a = Self::check_b(a, a_lo, a_hi);
+                .chain(Gate::three_bit_spread_and_range(a_hi.clone(), spread_a_hi.clone(),))
+                .chain(Gate::three_bit_spread_and_range(d.clone(), spread_d.clone()));
+        // a_lo + 2^3 * a_hi = a, on W_[49..77]
+        // let check_a = Self::check_b(a, a_lo, a_hi);
+        let check_a1 = {
+            let expected_a = a_lo + a_hi * F::from(1 << 3);
+            expected_a - a
+        };
+
         let spread_witness = spread_r0_even
             + spread_r0_odd * F::from(2)
             + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
@@ -305,7 +308,7 @@ impl<F: PrimeField> ScheduleGate<F> {
         let xor = xor_0 + xor_1 + xor_2;
 
         check_spread_and_range
-            .chain(Some(("check_a", check_a)))
+            .chain(Some(("check_a1", check_a1)))
             .chain(Some(("lower_sigma_1", spread_witness - xor)))
             .map(move |(name, poly)| (name, s_lower_sigma_1.clone() * poly))
     }
@@ -426,7 +429,7 @@ impl<F: PrimeField> ScheduleGate<F> {
             + spread_e.clone() * F::from(1 << 4)
             + spread_f_lo_lo.clone() * F::from(1 << 26)
             + spread_f_lo_hi.clone() * F::from(1 << 48)
-            + spread_f_hi_hi.clone() * F::from_u128(1 << 68)
+            + spread_f_hi_lo.clone() * F::from_u128(1 << 68)
             + spread_f_hi_hi.clone() * F::from_u128(1 << 90)
             + spread_g.clone() * F::from_u128(1 << 110);
         let xor_1 = spread_f_lo_lo.clone()

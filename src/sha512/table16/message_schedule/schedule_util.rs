@@ -10,14 +10,14 @@ use halo2_proofs::{
 use super::super::{super::BLOCK_SIZE, BlockWord, ROUNDS};
 
 // Rows needed for each gate
-pub const DECOMPOSE_0_ROWS: usize = 4;
-pub const DECOMPOSE_1_ROWS: usize = 4;
-pub const DECOMPOSE_2_ROWS: usize = 4;
-pub const DECOMPOSE_3_ROWS: usize = 4;
-pub const SIGMA_0_V1_ROWS: usize = 6;
-pub const SIGMA_0_V2_ROWS: usize = 6;
-pub const SIGMA_1_V1_ROWS: usize = 6;
-pub const SIGMA_1_V2_ROWS: usize = 6;
+pub const DECOMPOSE_0_ROWS: usize = 2;
+pub const DECOMPOSE_1_ROWS: usize = 5;
+pub const DECOMPOSE_2_ROWS: usize = 6;
+pub const DECOMPOSE_3_ROWS: usize = 6;
+pub const SIGMA_0_V1_ROWS: usize = 4;
+pub const SIGMA_0_V2_ROWS: usize = 4;
+pub const SIGMA_1_V1_ROWS: usize = 4;
+pub const SIGMA_1_V2_ROWS: usize = 4;
 
 // Rows needed for each subregion
 pub const SUBREGION_0_LEN: usize = 1; // W_0

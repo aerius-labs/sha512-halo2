@@ -362,15 +362,15 @@ impl MessageScheduleConfig {
                 for index in 1..14 {
                     let row = get_word_row(index);
                     self.s_decompose_1.enable(&mut region, row)?;
-                    self.s_lower_sigma_0.enable(&mut region, row + 3)?;
+                    self.s_lower_sigma_0.enable(&mut region, row + 7)?;
                 }
 
                 for index in 14..65 {
                     let row = get_word_row(index);
                     self.s_decompose_2.enable(&mut region, row)?;
-                    self.s_lower_sigma_0_v2.enable(&mut region, row + 3)?;
+                    self.s_lower_sigma_0_v2.enable(&mut region, row + 7)?;
                     self.s_lower_sigma_1_v2
-                        .enable(&mut region, row + SIGMA_0_V2_ROWS + 3)?;
+                        .enable(&mut region, row + SIGMA_0_V2_ROWS + 7)?;
 
                     let new_word_idx = index + 2;
                     self.s_word
@@ -380,7 +380,7 @@ impl MessageScheduleConfig {
                 for index in 65..78 {
                     let row = get_word_row(index);
                     self.s_decompose_3.enable(&mut region, row)?;
-                    self.s_lower_sigma_1.enable(&mut region, row + 3)?;
+                    self.s_lower_sigma_1.enable(&mut region, row + 7)?;
 
                     let new_word_idx = index + 2;
                     self.s_word
