@@ -1061,10 +1061,78 @@ impl CompressionConfig {
             || "digest",
             |mut region| {
                 digest = self.assign_digest(&mut region, state.clone())?;
-
+                
                 Ok(())
             },
         )?;
         Ok(digest)
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::super::{
+        super::BLOCK_SIZE, msg_schedule_test_input, BlockWord, Table16Chip, Table16Config, IV,
+    };
+    use halo2_proofs::{
+        circuit::{Layouter, SimpleFloorPlanner},
+        dev::MockProver,
+        pasta::pallas,
+        plonk::{Circuit, ConstraintSystem, Error},
+    };
+
+    #[test]
+    fn compress() {
+        struct MyCircuit {}
+
+        impl Circuit<pallas::Base> for MyCircuit {
+            type Config = Table16Config;
+            type FloorPlanner = SimpleFloorPlanner;
+
+            fn without_witnesses(&self) -> Self {
+                MyCircuit {}
+            }
+
+            fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
+                Table16Chip::configure(meta)
+            }
+
+            fn synthesize(
+                &self,
+                config: Self::Config,
+                mut layouter: impl Layouter<pallas::Base>,
+            ) -> Result<(), Error> {
+                Table16Chip::load(config.clone(), &mut layouter)?;
+
+                // Test vector: "abc"
+                let input: [BlockWord; BLOCK_SIZE] = msg_schedule_test_input();
+
+                let (_, w_halves) = config.message_schedule.process(&mut layouter, input)?;
+
+                let compression = config.compression.clone();
+                let initial_state = compression.initialize_with_iv(&mut layouter, IV)?;
+
+                let state = config
+                    .compression
+                    .compress(&mut layouter, initial_state, w_halves)?;
+
+                let digest = config.compression.digest(&mut layouter, state)?;
+                for (idx, digest_word) in digest.iter().enumerate() {
+                    digest_word.0.assert_if_known(|digest_word| {
+                        (*digest_word as u128 + IV[idx] as u128) as u64
+                            == super::compression_util::COMPRESSION_OUTPUT[idx]
+                    });
+                }
+
+                Ok(())
+            }
+        }
+
+        let circuit: MyCircuit = MyCircuit {};
+
+        let prover = match MockProver::<pallas::Base>::run(19, &circuit, vec![]) {
+            Ok(prover) => prover,
+            Err(e) => panic!("{:?}", e),
+        };
+        assert_eq!(prover.verify(), Ok(()));
     }
 }

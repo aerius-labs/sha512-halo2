@@ -185,11 +185,10 @@ impl Subregion2Word {
                     .chain(f_hi_hi.iter())
                     .copied()
                     .collect::<Vec<_>>();
-                // println!("{:?}",self.spread_f_hi_hi());
                 let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
                 let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
                 let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
-                // println!("{},{},{}",xor_0,xor_1,xor_2);
+                
                 i2lebsp(xor_0 + xor_1 + xor_2)
             })
     }
@@ -293,8 +292,6 @@ impl MessageScheduleConfig {
                     w_halves[new_word_idx - 16].1.value_u32(),
                 ),
             ]);
-            // println!("{:?},wowo, {:?}",w_halves[new_word_idx - 16].0.value_u32(),w_halves[new_word_idx - 16].1.value_u32());
-            // println!("{:?},yoyo, {:?}",lower_sigma_1_v2_results[new_word_idx - 16].0.value_u32(),lower_sigma_1_v2_results[new_word_idx - 16].1.value_u32());
 
             // Assign W_i, carry_i
             region.assign_advice(
@@ -541,7 +538,6 @@ impl MessageScheduleConfig {
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r = word.xor_sigma_1();
 
-        // println!("{:?}",r);
         let r_0: Value<[bool; 64]> = r.map(|r| r[..64].try_into().unwrap());
         let r_0_even = r_0.map(even_bits);
         let r_0_odd = r_0.map(odd_bits);

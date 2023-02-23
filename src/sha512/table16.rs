@@ -582,7 +582,7 @@ trait Table16Assignment {
 }
 
 #[cfg(test)]
-// #[cfg(feature = "test-dev-graph")]
+#[cfg(feature = "test-dev-graph")]
 mod tests {
     use super::super::{Sha512, BLOCK_SIZE};
     use super::{message_schedule::msg_schedule_test_input, Table16Chip, Table16Config};
@@ -595,7 +595,7 @@ mod tests {
 
     #[test]
     fn print_sha512_circuit() {
-        // use plotters::prelude::*;
+        use plotters::prelude::*;
         struct MyCircuit {}
 
         impl Circuit<pallas::Base> for MyCircuit {
@@ -632,11 +632,16 @@ mod tests {
                 Ok(())
             }
         }
-        let circuit: MyCircuit = MyCircuit {};
-        let prover = match MockProver::<pallas::Base>::run(19, &circuit, vec![]) {
-            Ok(prover) => prover,
-            Err(e) => panic!("{:?}", e),
-        };
-        prover.assert_satisfied();
+        let root =
+            BitMapBackend::new("sha-512-table16-chip-layout.png", (1024, 3480)).into_drawing_area();
+        root.fill(&WHITE).unwrap();
+        let root = root
+            .titled("16-bit Table SHA-512 Chip", ("sans-serif", 60))
+            .unwrap();
+
+        let circuit = MyCircuit {};
+        halo2_proofs::dev::CircuitLayout::default()
+            .render::<pallas::Base, _, _>(19, &circuit, &root)
+            .unwrap();
     }
 }    

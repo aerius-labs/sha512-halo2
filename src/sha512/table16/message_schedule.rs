@@ -487,12 +487,10 @@ mod tests {
 
                 // Run message_scheduler to get W_[0..80]
                 let (w, _) = config.message_schedule.process(&mut layouter, inputs)?;
-                let mut ctr = 0;
+            
                 for (word, test_word) in w.iter().zip(MSG_SCHEDULE_TEST_OUTPUT.iter()) {
                     word.value().assert_if_known(|bits| {
                         let word: u64 = lebs2ip(bits) as u64;
-                        println!("{},{},{}",word,test_word,ctr);
-                        ctr = ctr + 1;
                         word == *test_word
                         
                     });
