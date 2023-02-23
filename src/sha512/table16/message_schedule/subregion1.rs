@@ -163,23 +163,23 @@ impl MessageScheduleConfig {
 
         // Assign `c` (1-bit piece)
         let c =
-            AssignedBits::<1>::assign_bits(region, || "word_c", a_3, row, pieces[2].clone())?;
+            AssignedBits::<1>::assign_bits(region, || "word_c", a_3, row + 2, pieces[2].clone())?;
 
         // Assign `d_lo_lo` (14-bit piece) lookup
         let spread_d_lo_lo = pieces[3].clone().map(SpreadWord::try_new);
-        let spread_d_lo_lo = SpreadVar::with_lookup(region, &self.lookup, row - 1, spread_d_lo_lo)?;
+        let spread_d_lo_lo = SpreadVar::with_lookup(region, &self.lookup, row, spread_d_lo_lo)?;
 
         // Assign `d_lo_hi` (14-bit piece) lookup
         let spread_d_lo_hi = pieces[4].clone().map(SpreadWord::try_new);
-        let spread_d_lo_hi = SpreadVar::with_lookup(region, &self.lookup, row, spread_d_lo_hi)?;
+        let spread_d_lo_hi = SpreadVar::with_lookup(region, &self.lookup, row + 1, spread_d_lo_hi)?;
 
         // Assign `d_hi_lo` (14-bit piece) lookup
         let spread_d_hi_lo = pieces[5].clone().map(SpreadWord::try_new);
-        let spread_d_hi_lo = SpreadVar::with_lookup(region, &self.lookup, row + 1, spread_d_hi_lo)?;
+        let spread_d_hi_lo = SpreadVar::with_lookup(region, &self.lookup, row + 2, spread_d_hi_lo)?;
 
         // Assign `d_hi_hi` (14-bit piece) lookup
         let spread_d_hi_hi = pieces[6].clone().map(SpreadWord::try_new);
-        let spread_d_hi_hi = SpreadVar::with_lookup(region, &self.lookup, row + 2, spread_d_hi_hi)?;
+        let spread_d_hi_hi = SpreadVar::with_lookup(region, &self.lookup, row + 3 , spread_d_hi_hi)?;
 
         Ok(Subregion1Word {
             index,
@@ -209,7 +209,7 @@ impl MessageScheduleConfig {
         let a_5 = self.message_schedule;
         let a_6 = self.extras[2];
 
-        let row = get_word_row(word.index) + 3;
+        let row = get_word_row(word.index) + 6;
 
         // Assign `a` and copy constraint
         word.a.copy_advice(|| "a", region, a_6, row + 1)?;
@@ -241,10 +241,10 @@ impl MessageScheduleConfig {
         word.c.copy_advice(|| "c", region, a_4, row)?;
 
         // Assign `spread_d_lo_lo` and copy constraint
-        word.spread_d_lo_lo.copy_advice(|| "spread_d_lo_lo", region, a_5, row)?;
+        word.spread_d_lo_lo.copy_advice(|| "spread_d_lo_lo", region, a_5, row + 1)?;
 
         // Assign `spread_d_lo_hi` and copy constraint
-        word.spread_d_lo_hi.copy_advice(|| "spread_d_lo_hi", region, a_5, row + 1)?;
+        word.spread_d_lo_hi.copy_advice(|| "spread_d_lo_hi", region, a_5, row)?;
 
         // Assign `spread_d_hi_lo` and copy constraint
         word.spread_d_hi_lo.copy_advice(|| "spread_d_hi_lo", region, a_4, row + 1)?;

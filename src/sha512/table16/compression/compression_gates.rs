@@ -66,8 +66,8 @@ impl<F: PrimeField> CompressionGate<F> {
             + b_hi * F::from(1 << 31)
             + c_lo * F::from(1 << 34)
             + c_hi * F::from(1 << 36)
-            + d_lo * F::from(1 << 50)
-            + d_hi * F::from(1 << 61)
+            + d_lo * F::from(1 << 39)
+            + d_hi * F::from(1 << 53)
             + word_lo * (-F::ONE)
             + word_hi * F::from(1 << 32) * (-F::ONE);
         let spread_check = spread_a_lo
@@ -177,10 +177,14 @@ impl<F: PrimeField> CompressionGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_upper_sigma_0(
         s_upper_sigma_0: Expression<F>,
-        spread_r0_even: Expression<F>,
-        spread_r0_odd: Expression<F>,
-        spread_r1_even: Expression<F>,
-        spread_r1_odd: Expression<F>,
+        spread_r0_even_lo: Expression<F>,
+        spread_r0_even_hi: Expression<F>,
+        spread_r0_odd_lo: Expression<F>,
+        spread_r0_odd_hi: Expression<F>,
+        spread_r1_even_lo: Expression<F>,
+        spread_r1_even_hi: Expression<F>,
+        spread_r1_odd_lo: Expression<F>,
+        spread_r1_odd_hi: Expression<F>,
         spread_a_lo: Expression<F>,
         spread_a_hi: Expression<F>,
         spread_b_lo: Expression<F>,
@@ -190,19 +194,19 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_d_lo: Expression<F>,
         spread_d_hi: Expression<F>,
     ) -> Option<(&'static str, Expression<F>)> {
-        let spread_witness = spread_r0_even
-            + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
+        let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
+            + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c_lo.clone() * F::from(1 << 12)
-            + spread_c_hi.clone() * F::from(1 << 18)
+            + spread_c_hi.clone() * F::from(1 << 16)
             + spread_d_lo.clone() * F::from(1 << 22)
             + spread_d_hi.clone() * F::from(1 << 50)
             + spread_a_lo.clone() * F::from_u128(1 << 72)
             + spread_a_hi.clone() * F::from_u128(1 << 100);
         let xor_1 = spread_c_lo.clone()
-            + spread_c_hi.clone() * F::from(1 << 6)
+            + spread_c_hi.clone() * F::from(1 << 4)
             + spread_d_lo.clone() * F::from(1 << 10)
             + spread_d_hi.clone() * F::from(1 << 38)
             + spread_a_lo.clone() * F::from(1 << 60)
@@ -216,7 +220,7 @@ impl<F: PrimeField> CompressionGate<F> {
             + spread_b_lo * F::from_u128(1 << 106)
             + spread_b_hi * F::from_u128(1 << 112)
             + spread_c_lo * F::from_u128(1 << 118)
-            + spread_c_hi * F::from_u128(1 << 124);
+            + spread_c_hi * F::from_u128(1 << 122);
         let xor = xor_0 + xor_1 + xor_2;
         let check = spread_witness + (xor * -F::ONE);
 
@@ -228,10 +232,14 @@ impl<F: PrimeField> CompressionGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_upper_sigma_1(
         s_upper_sigma_1: Expression<F>,
-        spread_r0_even: Expression<F>,
-        spread_r0_odd: Expression<F>,
-        spread_r1_even: Expression<F>,
-        spread_r1_odd: Expression<F>,
+        spread_r0_even_lo: Expression<F>,
+        spread_r0_even_hi: Expression<F>,
+        spread_r0_odd_lo: Expression<F>,
+        spread_r0_odd_hi: Expression<F>,
+        spread_r1_even_lo: Expression<F>,
+        spread_r1_even_hi: Expression<F>,
+        spread_r1_odd_lo: Expression<F>,
+        spread_r1_odd_hi: Expression<F>,
         spread_a: Expression<F>,
         spread_b_lo: Expression<F>,
         spread_b_hi: Expression<F>,
@@ -240,9 +248,9 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_d_lo: Expression<F>,
         spread_d_hi: Expression<F>,
     ) -> Option<(&'static str, Expression<F>)> {
-        let spread_witness = spread_r0_even
-            + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
+        let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
+            + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
 
         let xor_0 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 4)
@@ -275,10 +283,14 @@ impl<F: PrimeField> CompressionGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_ch(
         s_ch: Expression<F>,
-        spread_p0_even: Expression<F>,
-        spread_p0_odd: Expression<F>,
-        spread_p1_even: Expression<F>,
-        spread_p1_odd: Expression<F>,
+        spread_p0_even_lo: Expression<F>,
+        spread_p0_even_hi: Expression<F>,
+        spread_p0_odd_lo: Expression<F>,
+        spread_p0_odd_hi: Expression<F>,
+        spread_p1_even_lo: Expression<F>,
+        spread_p1_even_hi: Expression<F>,
+        spread_p1_odd_lo: Expression<F>,
+        spread_p1_odd_hi: Expression<F>,
         spread_e_lo: Expression<F>,
         spread_e_hi: Expression<F>,
         spread_f_lo: Expression<F>,
@@ -288,7 +300,11 @@ impl<F: PrimeField> CompressionGate<F> {
         let lhs_hi = spread_e_hi + spread_f_hi;
         let lhs = lhs_lo + lhs_hi * F::from_u128(1 << 64);
 
+        let spread_p0_even = spread_p0_even_lo + spread_p0_even_hi * F::from(1<<32);
+        let spread_p1_even = spread_p1_even_lo + spread_p1_even_hi * F::from(1<<32);
         let rhs_even = spread_p0_even + spread_p1_even * F::from_u128(1 << 64);
+        let spread_p0_odd = spread_p0_odd_lo + spread_p0_odd_hi * F::from(1<<32);
+        let spread_p1_odd = spread_p1_odd_lo + spread_p1_odd_hi * F::from(1<<32);
         let rhs_odd = spread_p0_odd + spread_p1_odd * F::from_u128(1 << 64);
         let rhs = rhs_even + rhs_odd * F::from(2);
 
@@ -301,10 +317,14 @@ impl<F: PrimeField> CompressionGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_ch_neg(
         s_ch_neg: Expression<F>,
-        spread_q0_even: Expression<F>,
-        spread_q0_odd: Expression<F>,
-        spread_q1_even: Expression<F>,
-        spread_q1_odd: Expression<F>,
+        spread_q0_even_lo: Expression<F>,
+        spread_q0_even_hi: Expression<F>,
+        spread_q0_odd_lo: Expression<F>,
+        spread_q0_odd_hi: Expression<F>,
+        spread_q1_even_lo: Expression<F>,
+        spread_q1_even_hi: Expression<F>,
+        spread_q1_odd_lo: Expression<F>,
+        spread_q1_odd_hi: Expression<F>,
         spread_e_lo: Expression<F>,
         spread_e_hi: Expression<F>,
         spread_e_neg_lo: Expression<F>,
@@ -331,8 +351,11 @@ impl<F: PrimeField> CompressionGate<F> {
         let lhs_lo = spread_e_neg_lo + spread_g_lo;
         let lhs_hi = spread_e_neg_hi + spread_g_hi;
         let lhs = lhs_lo + lhs_hi * F::from_u128(1 << 64);
-
+        let spread_q0_even = spread_q0_even_lo + spread_q0_even_hi * F::from(1<<32);
+        let spread_q1_even = spread_q1_even_lo + spread_q1_even_hi * F::from(1<<32);
         let rhs_even = spread_q0_even + spread_q1_even * F::from_u128(1 << 64);
+        let spread_q0_odd = spread_q0_odd_lo + spread_q0_odd_hi * F::from(1<<32);
+        let spread_q1_odd = spread_q1_odd_lo + spread_q1_odd_hi * F::from(1<<32);
         let rhs_odd = spread_q0_odd + spread_q1_odd * F::from_u128(1 << 64);
         let rhs = rhs_even + rhs_odd * F::from(2);
 
@@ -343,10 +366,14 @@ impl<F: PrimeField> CompressionGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_maj(
         s_maj: Expression<F>,
-        spread_m_0_even: Expression<F>,
-        spread_m_0_odd: Expression<F>,
-        spread_m_1_even: Expression<F>,
-        spread_m_1_odd: Expression<F>,
+        spread_m0_even_lo: Expression<F>,
+        spread_m0_even_hi: Expression<F>,
+        spread_m0_odd_lo: Expression<F>,
+        spread_m0_odd_hi: Expression<F>,
+        spread_m1_even_lo: Expression<F>,
+        spread_m1_even_hi: Expression<F>,
+        spread_m1_odd_lo: Expression<F>,
+        spread_m1_odd_hi: Expression<F>,
         spread_a_lo: Expression<F>,
         spread_a_hi: Expression<F>,
         spread_b_lo: Expression<F>,
@@ -354,8 +381,12 @@ impl<F: PrimeField> CompressionGate<F> {
         spread_c_lo: Expression<F>,
         spread_c_hi: Expression<F>,
     ) -> Option<(&'static str, Expression<F>)> {
-        let maj_even = spread_m_0_even + spread_m_1_even * F::from_u128(1 << 64);
-        let maj_odd = spread_m_0_odd + spread_m_1_odd * F::from_u128(1 << 64);
+        let spread_m0_even = spread_m0_even_lo + spread_m0_even_hi * F::from(1<<32);
+        let spread_m1_even = spread_m1_even_lo + spread_m1_even_hi * F::from(1<<32);
+        let maj_even = spread_m0_even + spread_m1_even * F::from_u128(1 << 64);
+        let spread_m0_odd = spread_m0_odd_lo + spread_m0_odd_hi * F::from(1<<32);
+        let spread_m1_odd = spread_m1_odd_lo + spread_m1_odd_hi * F::from(1<<32);
+        let maj_odd = spread_m0_odd + spread_m1_odd * F::from_u128(1 << 64);
         let maj = maj_even + maj_odd * F::from(2);
 
         let a = spread_a_lo + spread_a_hi * F::from_u128(1 << 64);

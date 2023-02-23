@@ -25,7 +25,7 @@ impl CompressionConfig {
 
         let abcd_row = 0;
         self.s_digest.enable(region, abcd_row)?;
-        let efgh_row = abcd_row + 2;
+        let efgh_row = abcd_row + 4;
         self.s_digest.enable(region, efgh_row)?;
 
         // Assign digest for A, B, C, D
@@ -95,7 +95,7 @@ impl CompressionConfig {
             || "word",
             word_col,
             row,
-            || val.map(|val| pallas::Base::from_u128(val as u128)),
+            || val.map(|val| pallas::Base::from(val)),
         )?;
 
         Ok(val)

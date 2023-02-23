@@ -5,7 +5,6 @@ use super::{
 use crate::sha512::table16::{
     util::*, AssignedBits, SpreadVar, SpreadWord, StateWord, Table16Assignment,
 };
-use ff::PrimeField;
 use halo2_proofs::{
     circuit::{Region, Value},
     pasta::pallas,
@@ -15,6 +14,7 @@ use std::convert::TryInto;
 
 // Test vector 'abc'
 #[cfg(test)]
+#[allow(dead_code)]
 pub const COMPRESSION_OUTPUT: [u64; 8] = [
     0b1101110110101111001101011010000110010011011000010111101010111010,
     0b1010111100110101101000011001001101100001011110101011101011001100,
@@ -27,12 +27,12 @@ pub const COMPRESSION_OUTPUT: [u64; 8] = [
 ];
 
 // Rows needed for each gate
-pub const SIGMA_0_ROWS: usize = 6;
-pub const SIGMA_1_ROWS: usize = 6;
-pub const CH_ROWS: usize = 8;
-pub const MAJ_ROWS: usize = 4;
+pub const SIGMA_0_ROWS: usize = 9;
+pub const SIGMA_1_ROWS: usize = 9;
+pub const CH_ROWS: usize = 18;
+pub const MAJ_ROWS: usize = 9;
 pub const DECOMPOSE_ABCD: usize = 4;
-pub const DECOMPOSE_EFGH: usize = 4;
+pub const DECOMPOSE_EFGH: usize = 5;
 
 // Rows needed for main subregion
 pub const SUBREGION_MAIN_LEN: usize = 80;
@@ -196,7 +196,7 @@ pub fn get_digest_abcd_row() -> usize {
 }
 
 pub fn get_digest_efgh_row() -> usize {
-    get_digest_abcd_row() + 2
+    get_digest_abcd_row() + 4
 }
 
 impl CompressionConfig {
@@ -210,8 +210,8 @@ impl CompressionConfig {
 
         let a_3 = self.extras[0];
         let a_4 = self.extras[1];
-        let a_5 = self.message_schedule;
-        let a_6 = self.extras[2];
+        // let a_5 = self.message_schedule;
+        // let a_6 = self.extras[2];
 
         let spread_pieces = val.map(AbcdVar::pieces);
         let spread_pieces = spread_pieces.transpose_vec(8);
@@ -219,57 +219,57 @@ impl CompressionConfig {
         let a_lo = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row-1,
+            row,
             spread_pieces[0].clone().map(SpreadWord::<14,28>::try_new),
         )?;
         let a_hi = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row,
+            row + 1,
             spread_pieces[1].clone().map(SpreadWord::<14,28>::try_new),
         )?;
         let b_lo = SpreadVar::without_lookup(
             region,
             a_3,
-            row-1,
+            row,
             a_4,
-            row-1,
+            row,
             spread_pieces[2].clone().map(SpreadWord::<3, 6>::try_new),
         )?;
         let b_hi = SpreadVar::without_lookup(
             region,
             a_3,
-            row,
+            row+1,
             a_4,
-            row,
+            row+1,
             spread_pieces[3].clone().map(SpreadWord::<3, 6>::try_new),
         )?;
         let c_lo = SpreadVar::without_lookup(
             region,
             a_3,
-            row+1,
+            row+2,
             a_4,
-            row+1,
+            row+2,
             spread_pieces[4].clone().map(SpreadWord::<2, 4>::try_new),
         )?;
         let c_hi = SpreadVar::without_lookup(
             region,
             a_3,
-            row + 2,
+            row + 3,
             a_4,
-            row + 2,
+            row + 3,
             spread_pieces[5].clone().map(SpreadWord::<3, 6>::try_new),
         )?;
         let d_lo = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row+1,
+            row+2,
             spread_pieces[6].clone().map(SpreadWord::<14, 28>::try_new),
         )?;
         let d_hi = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row+2,
+            row+3,
             spread_pieces[7].clone().map(SpreadWord::<11, 22>::try_new),
         )?;
 
@@ -295,55 +295,55 @@ impl CompressionConfig {
 
         let a_3 = self.extras[0];
         let a_4 = self.extras[1];
-        let a_5 = self.message_schedule;
-        let a_6 = self.extras[2];
+        // let a_5 = self.message_schedule;
+        // let a_6 = self.extras[2];
 
         let spread_pieces = val.map(EfghVar::pieces);
         let spread_pieces = spread_pieces.transpose_vec(7);
         let a = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row - 1,
+            row,
             spread_pieces[0].clone().map(SpreadWord::try_new),
         )?;
         let b_lo = SpreadVar::without_lookup(
             region,
             a_3,
-            row - 1,
+            row,
             a_4,
-            row - 1,
+            row,
             spread_pieces[1].clone().map(SpreadWord::try_new),
         )?;
         let b_hi = SpreadVar::without_lookup(
             region,
             a_3,
-            row ,
+            row + 1,
             a_4,
-            row ,
+            row + 1,
             spread_pieces[2].clone().map(SpreadWord::try_new),
         )?;
         let c_lo = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row,
+            row + 1,
             spread_pieces[3].clone().map(SpreadWord::try_new),
         )?;
         let c_hi = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row+1,
+            row+2,
             spread_pieces[4].clone().map(SpreadWord::try_new),
         )?;
         let d_lo = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row+2,
+            row+3,
             spread_pieces[5].clone().map(SpreadWord::try_new),
         )?;
         let d_hi = SpreadVar::with_lookup(
             region,
             &self.lookup,
-            row+3,
+            row+4,
             spread_pieces[6].clone().map(SpreadWord::try_new),
         )?;
 
@@ -394,7 +394,7 @@ impl CompressionConfig {
         let a_3 = self.extras[0];
         let a_4 = self.extras[1];
         let a_5 = self.message_schedule;
-        let a_6 = self.extras[2];
+        // let a_6 = self.extras[2];
 
         let row = get_upper_sigma_0_row(round_idx);
 
@@ -431,15 +431,15 @@ impl CompressionConfig {
         // Assign `spread_d_hi` and copy constraint
         word.d_hi
             .spread
-            .copy_advice(|| "spread_d_hi", region, a_6, row - 1)?;
+            .copy_advice(|| "spread_d_hi", region, a_3, row - 1)?;
 
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r = word.xor_upper_sigma();
-        let r_0: Value<[bool; 32]> = r.map(|r| r[..32].try_into().unwrap());
+        let r_0: Value<[bool; 64]> = r.map(|r| r[..64].try_into().unwrap());
         let r_0_even = r_0.map(even_bits);
         let r_0_odd = r_0.map(odd_bits);
 
-        let r_1: Value<[bool; 32]> = r.map(|r| r[32..].try_into().unwrap());
+        let r_1: Value<[bool; 64]> = r.map(|r| r[64..].try_into().unwrap());
         let r_1_even = r_1.map(even_bits);
         let r_1_odd = r_1.map(odd_bits);
 
@@ -494,11 +494,11 @@ impl CompressionConfig {
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r = word.xor_upper_sigma();
-        let r_0: Value<[bool; 32]> = r.map(|r| r[..32].try_into().unwrap());
+        let r_0: Value<[bool; 64]> = r.map(|r| r[..64].try_into().unwrap());
         let r_0_even = r_0.map(even_bits);
         let r_0_odd = r_0.map(odd_bits);
 
-        let r_1: Value<[bool; 32]> = r.map(|r| r[32..].try_into().unwrap());
+        let r_1: Value<[bool; 64]> = r.map(|r| r[64..].try_into().unwrap());
         let r_1_even = r_1.map(even_bits);
         let r_1_odd = r_1.map(odd_bits);
 
@@ -789,7 +789,8 @@ impl CompressionConfig {
         w.1.copy_advice(|| "w_hi", region, a_8, row)?;
 
         // Assign and copy ch
-        ch.1.copy_advice(|| "ch_neg_hi", region, a_6, row + 1)?;
+        // ch.0.copy_advice(|| "ch_lo", region, a_9, row)?;
+        ch.1.copy_advice(|| "ch_hi", region, a_6, row + 1)?;
 
         // Assign and copy ch_neg
         ch_neg.0.copy_advice(|| "ch_neg_lo", region, a_5, row - 1)?;
@@ -886,6 +887,7 @@ impl CompressionConfig {
         let a_9 = self.extras[5];
 
         // Assign and copy maj_1
+        // maj.0.copy_advice(|| "maj_1_lo", region, a_7, row)?;
         maj.1.copy_advice(|| "maj_1_hi", region, a_3, row - 1)?;
 
         // Assign and copy sigma_0
@@ -992,22 +994,22 @@ impl CompressionConfig {
         let hi_lo: Value<[bool; 16]> = word.map(|w| w[32..48].try_into().unwrap());
         let hi_hi: Value<[bool; 16]> = word.map(|w| w[48..64].try_into().unwrap());
 
-        let w_lo_lo = SpreadVar::without_lookup(region, a_7, row - 1, a_8, row - 1, lo_lo.map(SpreadWord::new))?;
-        let w_lo_hi = SpreadVar::without_lookup(region, a_7, row, a_8, row, lo_hi.map(SpreadWord::new))?;
-        let w_hi_lo = SpreadVar::without_lookup(region, a_7, row, a_8, row, hi_lo.map(SpreadWord::new))?;
-        let w_hi_hi = SpreadVar::without_lookup(region, a_7, row + 1, a_8, row + 1, hi_hi.map(SpreadWord::new))?;
+        let w_lo_lo = SpreadVar::without_lookup(region, a_7, row, a_8, row, lo_lo.map(SpreadWord::new))?;
+        let w_lo_hi = SpreadVar::without_lookup(region, a_7, row+1, a_8, row+1, lo_hi.map(SpreadWord::new))?;
+        let w_hi_lo = SpreadVar::without_lookup(region, a_7, row+2, a_8, row+2, hi_lo.map(SpreadWord::new))?;
+        let w_hi_hi = SpreadVar::without_lookup(region, a_7, row + 3, a_8, row + 3, hi_hi.map(SpreadWord::new))?;
 
         let w_lo_dense = Self::joindense(&w_lo_lo,&w_lo_hi);
-        let w_lo_d = AssignedBits::<32>::assign_bits(region, || "w_lo_d", a_7, row - 1, w_lo_dense)?;
+        let w_lo_d = AssignedBits::<32>::assign_bits(region, || "w_lo_d", a_7, row, w_lo_dense)?;
 
         let w_lo_spread = Self::joinspread(&w_lo_lo,&w_lo_hi);
-        let w_lo_s = AssignedBits::<64>::assign_bits(region, || "w_lo_s", a_7, row, w_lo_spread)?;
+        let w_lo_s = AssignedBits::<64>::assign_bits(region, || "w_lo_s", a_8, row, w_lo_spread)?;
 
         let w_hi_dense = Self::joindense(&w_hi_lo,&w_hi_hi);
         let w_hi_d = AssignedBits::<32>::assign_bits(region, || "w_hi_d", a_7, row + 1, w_hi_dense)?;
 
         let w_hi_spread = Self::joinspread(&w_hi_lo,&w_hi_hi);
-        let w_hi_s = AssignedBits::<64>::assign_bits(region, || "w_hi_s", a_7, row + 2, w_hi_spread)?;
+        let w_hi_s = AssignedBits::<64>::assign_bits(region, || "w_hi_s", a_8, row + 1, w_hi_spread)?;
 
         Ok((
             (w_lo_d, w_hi_d).into(),

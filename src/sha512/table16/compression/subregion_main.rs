@@ -14,6 +14,7 @@ impl CompressionConfig {
         let a_3 = self.extras[0];
         let a_4 = self.extras[1];
         let a_7 = self.extras[3];
+        // let a_8 = self.extras[4];
 
         let (a, b, c, d, e, f, g, h) = match_state(state);
 

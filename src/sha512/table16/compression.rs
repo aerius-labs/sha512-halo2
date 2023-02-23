@@ -349,6 +349,7 @@ impl RoundWordSpread {
     }
 }
 
+
 #[derive(Clone, Debug)]
 pub struct RoundWordA {
     pieces: Option<AbcdVar>,
@@ -554,28 +555,28 @@ impl CompressionConfig {
         // `c` is split into (2,3)-bit c_lo and c_hi.
         meta.create_gate("decompose ABCD", |meta| {
             let s_decompose_abcd = meta.query_selector(s_decompose_abcd);
-            let a_lo = meta.query_advice(a_1, Rotation::prev()); // 14-bit chunk
-            let spread_a_lo = meta.query_advice(a_2, Rotation::prev());
-            let tag_a_lo = meta.query_advice(a_0, Rotation::prev());
-            let a_hi = meta.query_advice(a_1, Rotation::cur()); // 14-bit chunk
-            let spread_a_hi = meta.query_advice(a_2, Rotation::cur());
-            let tag_a_hi = meta.query_advice(a_0, Rotation::cur());
-            let b_lo = meta.query_advice(a_3, Rotation::prev()); // 3-bit chunk
-            let spread_b_lo = meta.query_advice(a_4, Rotation::prev());
-            let b_hi = meta.query_advice(a_3, Rotation::cur()); //3-bit chunk
-            let spread_b_hi = meta.query_advice(a_4,Rotation::cur());
-            let c_lo = meta.query_advice(a_3, Rotation::next()); // 2-bit chunk
-            let spread_c_lo = meta.query_advice(a_4, Rotation::next());
+            let a_lo = meta.query_advice(a_1, Rotation::cur()); // 14-bit chunk
+            let spread_a_lo = meta.query_advice(a_2, Rotation::cur());
+            let tag_a_lo = meta.query_advice(a_0, Rotation::cur());
+            let a_hi = meta.query_advice(a_1, Rotation::next()); // 14-bit chunk
+            let spread_a_hi = meta.query_advice(a_2, Rotation::next());
+            let tag_a_hi = meta.query_advice(a_0, Rotation::next());
+            let b_lo = meta.query_advice(a_3, Rotation::cur()); // 3-bit chunk
+            let spread_b_lo = meta.query_advice(a_4, Rotation::cur());
+            let b_hi = meta.query_advice(a_3, Rotation::next()); //3-bit chunk
+            let spread_b_hi = meta.query_advice(a_4,Rotation::next());
+            let c_lo = meta.query_advice(a_3, Rotation(2)); // 2-bit chunk
+            let spread_c_lo = meta.query_advice(a_4, Rotation(2));
             // let c_mid = meta.query_advice(a_5, Rotation::cur()); // 3-bit chunk
             // let spread_c_mid = meta.query_advice(a_6, Rotation::cur());
-            let c_hi = meta.query_advice(a_3, Rotation(2)); // 3-bit chunk
-            let spread_c_hi = meta.query_advice(a_4, Rotation(2));
-            let d_lo = meta.query_advice(a_1, Rotation::next()); // 14-bit chunk
-            let spread_d_lo = meta.query_advice(a_2, Rotation::next());
-            let tag_d_lo = meta.query_advice(a_0, Rotation::next());
-            let d_hi = meta.query_advice(a_1, Rotation(2)); // 11-bit chunk
-            let spread_d_hi = meta.query_advice(a_2, Rotation(2));
-            let tag_d_hi = meta.query_advice(a_0, Rotation(2));
+            let c_hi = meta.query_advice(a_3, Rotation(3)); // 3-bit chunk
+            let spread_c_hi = meta.query_advice(a_4, Rotation(3));
+            let d_lo = meta.query_advice(a_1, Rotation(2)); // 14-bit chunk
+            let spread_d_lo = meta.query_advice(a_2, Rotation(2));
+            let tag_d_lo = meta.query_advice(a_0, Rotation(2));
+            let d_hi = meta.query_advice(a_1, Rotation(3)); // 11-bit chunk
+            let spread_d_hi = meta.query_advice(a_2, Rotation(3));
+            let tag_d_hi = meta.query_advice(a_0, Rotation(3));
             let word_lo = meta.query_advice(a_7, Rotation::cur());
             let spread_word_lo = meta.query_advice(a_8, Rotation::cur());
             let word_hi = meta.query_advice(a_7, Rotation::next());
@@ -613,27 +614,27 @@ impl CompressionConfig {
         // `b` is split into (2, 2)-bit b_lo, b_hi
         meta.create_gate("Decompose EFGH", |meta| {
             let s_decompose_efgh = meta.query_selector(s_decompose_efgh);
-            let a = meta.query_advice(a_1, Rotation::prev()); // 14-bit chunk
-            let spread_a = meta.query_advice(a_2, Rotation::prev());
-            let tag_a = meta.query_advice(a_0,Rotation::prev());
+            let a = meta.query_advice(a_1, Rotation::cur()); // 14-bit chunk
+            let spread_a = meta.query_advice(a_2, Rotation::cur());
+            let tag_a = meta.query_advice(a_0,Rotation::cur());
             // let a_hi = meta.query_advice(a_5, Rotation::next()); // 3-bit chunk
             // let spread_a_hi = meta.query_advice(a_6, Rotation::next());
-            let b_lo = meta.query_advice(a_3, Rotation::prev()); // 2-bit chunk
-            let spread_b_lo = meta.query_advice(a_4, Rotation::prev());
-            let b_hi = meta.query_advice(a_3, Rotation::cur()); // 2-bit chunk
-            let spread_b_hi = meta.query_advice(a_4, Rotation::cur());
-            let c_lo = meta.query_advice(a_1, Rotation::cur()); // 13-bit chunk
-            let spread_c_lo = meta.query_advice(a_2, Rotation::cur());
-            let tag_c_lo = meta.query_advice(a_0, Rotation::cur());
-            let c_hi = meta.query_advice(a_1, Rotation::next()); // 10-bit chunk
-            let spread_c_hi = meta.query_advice(a_2, Rotation::next());
-            let tag_c_hi = meta.query_advice(a_0, Rotation::next());
-            let d_lo = meta.query_advice(a_1, Rotation(2)); // 13-bit chunk
-            let spread_d_lo = meta.query_advice(a_2, Rotation(2));
-            let tag_d_lo = meta.query_advice(a_0, Rotation(2));
-            let d_hi = meta.query_advice(a_1, Rotation(3)); // 10-bit chunk
-            let spread_d_hi = meta.query_advice(a_2, Rotation(3));
-            let tag_d_hi = meta.query_advice(a_0, Rotation(3));
+            let b_lo = meta.query_advice(a_3, Rotation::cur()); // 2-bit chunk
+            let spread_b_lo = meta.query_advice(a_4, Rotation::cur());
+            let b_hi = meta.query_advice(a_3, Rotation::next()); // 2-bit chunk
+            let spread_b_hi = meta.query_advice(a_4, Rotation::next());
+            let c_lo = meta.query_advice(a_1, Rotation::next()); // 13-bit chunk
+            let spread_c_lo = meta.query_advice(a_2, Rotation::next());
+            let tag_c_lo = meta.query_advice(a_0, Rotation::next());
+            let c_hi = meta.query_advice(a_1, Rotation(2)); // 10-bit chunk
+            let spread_c_hi = meta.query_advice(a_2, Rotation(2));
+            let tag_c_hi = meta.query_advice(a_0, Rotation(2));
+            let d_lo = meta.query_advice(a_1, Rotation(3)); // 13-bit chunk
+            let spread_d_lo = meta.query_advice(a_2, Rotation(3));
+            let tag_d_lo = meta.query_advice(a_0, Rotation(3));
+            let d_hi = meta.query_advice(a_1, Rotation(4)); // 10-bit chunk
+            let spread_d_hi = meta.query_advice(a_2, Rotation(4));
+            let tag_d_hi = meta.query_advice(a_0, Rotation(4));
             let word_lo = meta.query_advice(a_7, Rotation::cur());
             let spread_word_lo = meta.query_advice(a_8, Rotation::cur());
             let word_hi = meta.query_advice(a_7, Rotation::next());
@@ -671,10 +672,14 @@ impl CompressionConfig {
         // (28, 6, 5, 25)-bit chunks
         meta.create_gate("s_upper_sigma_0", |meta| {
             let s_upper_sigma_0 = meta.query_selector(s_upper_sigma_0);
-            let spread_r0_even = meta.query_advice(a_2, Rotation::prev());
-            let spread_r0_odd = meta.query_advice(a_2, Rotation::cur());
-            let spread_r1_even = meta.query_advice(a_2, Rotation::next());
-            let spread_r1_odd = meta.query_advice(a_3, Rotation::cur());
+            let spread_r0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
+            let spread_r0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
+            let spread_r0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_r0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
+            let spread_r1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
+            let spread_r1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
+            let spread_r1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
+            let spread_r1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
 
             let spread_a_lo = meta.query_advice(a_3, Rotation::next());
             let spread_a_hi = meta.query_advice(a_4, Rotation::prev());
@@ -684,14 +689,18 @@ impl CompressionConfig {
             // let spread_c_mid = meta.query_advice(a_4, Rotation::prev());
             let spread_c_hi = meta.query_advice(a_5, Rotation::cur());
             let spread_d_lo = meta.query_advice(a_5, Rotation::next());
-            let spread_d_hi = meta.query_advice(a_6, Rotation::prev());
+            let spread_d_hi = meta.query_advice(a_3, Rotation::prev());
 
             CompressionGate::s_upper_sigma_0(
                 s_upper_sigma_0,
-                spread_r0_even,
-                spread_r0_odd,
-                spread_r1_even,
-                spread_r1_odd,
+                spread_r0_even_lo,
+                spread_r0_even_hi,
+                spread_r0_odd_lo,
+                spread_r0_odd_hi,
+                spread_r1_even_lo,
+                spread_r1_even_hi,
+                spread_r1_odd_lo,
+                spread_r1_odd_hi,
                 spread_a_lo,
                 spread_a_hi,
                 spread_b_lo,
@@ -707,10 +716,14 @@ impl CompressionConfig {
         // (14, 4, 23, 23)-bit chunks
         meta.create_gate("s_upper_sigma_1", |meta| {
             let s_upper_sigma_1 = meta.query_selector(s_upper_sigma_1);
-            let spread_r0_even = meta.query_advice(a_2, Rotation::prev());
-            let spread_r0_odd = meta.query_advice(a_2, Rotation::cur());
-            let spread_r1_even = meta.query_advice(a_2, Rotation::next());
-            let spread_r1_odd = meta.query_advice(a_3, Rotation::cur());
+            let spread_r0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
+            let spread_r0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
+            let spread_r0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_r0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
+            let spread_r1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
+            let spread_r1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
+            let spread_r1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
+            let spread_r1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
 
             let spread_a = meta.query_advice(a_3, Rotation::next());
             // let spread_a_hi = meta.query_advice(a_4, Rotation::next());
@@ -723,10 +736,14 @@ impl CompressionConfig {
 
             CompressionGate::s_upper_sigma_1(
                 s_upper_sigma_1,
-                spread_r0_even,
-                spread_r0_odd,
-                spread_r1_even,
-                spread_r1_odd,
+                spread_r0_even_lo,
+                spread_r0_even_hi,
+                spread_r0_odd_lo,
+                spread_r0_odd_hi,
+                spread_r1_even_lo,
+                spread_r1_even_hi,
+                spread_r1_odd_lo,
+                spread_r1_odd_hi,
                 spread_a,
                 spread_b_lo,
                 spread_b_hi,
@@ -737,14 +754,19 @@ impl CompressionConfig {
             )
         });
 
-        // s_ch on efgh words
+        // s_ch on efgh words (14,4,23,23)
         // First part of choice gate on (E, F, G), E ∧ F
         meta.create_gate("s_ch", |meta| {
             let s_ch = meta.query_selector(s_ch);
-            let spread_p0_even = meta.query_advice(a_2, Rotation::prev());
-            let spread_p0_odd = meta.query_advice(a_2, Rotation::cur());
-            let spread_p1_even = meta.query_advice(a_2, Rotation::next());
-            let spread_p1_odd = meta.query_advice(a_3, Rotation::cur());
+            let spread_p0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
+            let spread_p0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
+            let spread_p0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_p0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
+            let spread_p1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
+            let spread_p1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
+            let spread_p1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
+            let spread_p1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
+
             let spread_e_lo = meta.query_advice(a_3, Rotation::prev());
             let spread_e_hi = meta.query_advice(a_4, Rotation::prev());
             let spread_f_lo = meta.query_advice(a_3, Rotation::next());
@@ -752,10 +774,14 @@ impl CompressionConfig {
 
             CompressionGate::s_ch(
                 s_ch,
-                spread_p0_even,
-                spread_p0_odd,
-                spread_p1_even,
-                spread_p1_odd,
+                spread_p0_even_lo,
+                spread_p0_even_hi,
+                spread_p0_odd_lo,
+                spread_p0_odd_hi,
+                spread_p1_even_lo,
+                spread_p1_even_hi,
+                spread_p1_odd_lo,
+                spread_p1_odd_hi,
                 spread_e_lo,
                 spread_e_hi,
                 spread_f_lo,
@@ -767,10 +793,14 @@ impl CompressionConfig {
         // Second part of Choice gate on (E, F, G), ¬E ∧ G
         meta.create_gate("s_ch_neg", |meta| {
             let s_ch_neg = meta.query_selector(s_ch_neg);
-            let spread_q0_even = meta.query_advice(a_2, Rotation::prev());
-            let spread_q0_odd = meta.query_advice(a_2, Rotation::cur());
-            let spread_q1_even = meta.query_advice(a_2, Rotation::next());
-            let spread_q1_odd = meta.query_advice(a_3, Rotation::cur());
+            let spread_q0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
+            let spread_q0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
+            let spread_q0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_q0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
+            let spread_q1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
+            let spread_q1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
+            let spread_q1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
+            let spread_q1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
             let spread_e_lo = meta.query_advice(a_5, Rotation::prev());
             let spread_e_hi = meta.query_advice(a_5, Rotation::cur());
             let spread_e_neg_lo = meta.query_advice(a_3, Rotation::prev());
@@ -780,10 +810,14 @@ impl CompressionConfig {
 
             CompressionGate::s_ch_neg(
                 s_ch_neg,
-                spread_q0_even,
-                spread_q0_odd,
-                spread_q1_even,
-                spread_q1_odd,
+                spread_q0_even_lo,
+                spread_q0_even_hi,
+                spread_q0_odd_lo,
+                spread_q0_odd_hi,
+                spread_q1_even_lo,
+                spread_q1_even_hi,
+                spread_q1_odd_lo,
+                spread_q1_odd_hi,
                 spread_e_lo,
                 spread_e_hi,
                 spread_e_neg_lo,
@@ -796,10 +830,14 @@ impl CompressionConfig {
         // s_maj on abcd words
         meta.create_gate("s_maj", |meta| {
             let s_maj = meta.query_selector(s_maj);
-            let spread_m0_even = meta.query_advice(a_2, Rotation::prev());
-            let spread_m0_odd = meta.query_advice(a_2, Rotation::cur());
-            let spread_m1_even = meta.query_advice(a_2, Rotation::next());
-            let spread_m1_odd = meta.query_advice(a_3, Rotation::cur());
+            let spread_q0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
+            let spread_q0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
+            let spread_q0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_q0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
+            let spread_q1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
+            let spread_q1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
+            let spread_q1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
+            let spread_q1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
             let spread_a_lo = meta.query_advice(a_4, Rotation::prev());
             let spread_a_hi = meta.query_advice(a_5, Rotation::prev());
             let spread_b_lo = meta.query_advice(a_4, Rotation::cur());
@@ -809,10 +847,14 @@ impl CompressionConfig {
 
             CompressionGate::s_maj(
                 s_maj,
-                spread_m0_even,
-                spread_m0_odd,
-                spread_m1_even,
-                spread_m1_odd,
+                spread_q0_even_lo,
+                spread_q0_even_hi,
+                spread_q0_odd_lo,
+                spread_q0_odd_hi,
+                spread_q1_even_lo,
+                spread_q1_even_hi,
+                spread_q1_odd_lo,
+                spread_q1_odd_hi,
                 spread_a_lo,
                 spread_a_hi,
                 spread_b_lo,
@@ -830,7 +872,7 @@ impl CompressionConfig {
             let h_prime_carry = meta.query_advice(a_9, Rotation::next());
             let sigma_e_lo = meta.query_advice(a_4, Rotation::cur());
             let sigma_e_hi = meta.query_advice(a_5, Rotation::cur());
-            let ch_lo = meta.query_advice(a_1, Rotation::cur());
+            let ch_lo = meta.query_advice(a_3, Rotation(3)); //changed
             let ch_hi = meta.query_advice(a_6, Rotation::next());
             let ch_neg_lo = meta.query_advice(a_5, Rotation::prev());
             let ch_neg_hi = meta.query_advice(a_5, Rotation::next());
@@ -869,7 +911,7 @@ impl CompressionConfig {
             let a_new_carry = meta.query_advice(a_9, Rotation::cur());
             let sigma_a_lo = meta.query_advice(a_6, Rotation::cur());
             let sigma_a_hi = meta.query_advice(a_6, Rotation::next());
-            let maj_abc_lo = meta.query_advice(a_1, Rotation::cur());
+            let maj_abc_lo = meta.query_advice(a_3, Rotation(3)); //changed
             let maj_abc_hi = meta.query_advice(a_3, Rotation::prev());
             let h_prime_lo = meta.query_advice(a_7, Rotation::prev());
             let h_prime_hi = meta.query_advice(a_8, Rotation::prev());

@@ -367,7 +367,7 @@ impl MessageScheduleConfig {
 
         // Assign `b` (5-bit piece) lookup
         let spread_b: Value<SpreadWord<5, 10>> = pieces[1].clone().map(SpreadWord::try_new);
-        let spread_b = SpreadVar::with_lookup(region, &self.lookup, row + 1, spread_b)?;
+        let spread_b = SpreadVar::with_lookup(region, &self.lookup, row + 4, spread_b)?;
 
         // Assign `c` (1-bit piece)
         let c = AssignedBits::<1>::assign_bits(region, || "c", a_4, row - 1, pieces[2].clone())?;
@@ -432,6 +432,8 @@ impl MessageScheduleConfig {
         let a_5 = self.message_schedule;
         let a_6 = self.extras[2];
         let a_7 = self.extras[3];
+        // let a_8 = self.extras[4];
+        // let a_8 = self.extras[4];
 
         // Assign `a` and copy constraint
         word.a.copy_advice(|| "a", region, a_4, row + 1)?;
@@ -473,13 +475,13 @@ impl MessageScheduleConfig {
         word.spread_f_lo_lo.copy_advice(|| "spread_f_lo_lo", region, a_7, row + 1)?;
 
         // Assign `f_lo_hi` and copy constraint
-        word.spread_f_lo_hi.copy_advice(|| "spread_f_lo_hi", region, a_7, row - 1)?;
+        word.spread_f_lo_hi.copy_advice(|| "spread_f_lo_hi", region, a_7, row + 2)?;
 
         // Assign `f_hi_lo` and copy constraint
-        word.spread_f_hi_lo.copy_advice(|| "spread_f_hi_lo", region, a_4, row + 1)?;
+        word.spread_f_hi_lo.copy_advice(|| "spread_f_hi_lo", region, a_4, row + 2)?;
 
         // Assign `f_hi_hi` and copy constraint
-        word.spread_f_hi_hi.copy_advice(|| "spread_f_hi_hi", region, a_4, row)?;
+        word.spread_f_hi_hi.copy_advice(|| "spread_f_hi_hi", region, a_4, row + 3)?;
 
         // Assign `g` and copy constraint
         word.g.copy_advice(|| "g", region, a_5, row + 1)?;
@@ -496,7 +498,7 @@ impl MessageScheduleConfig {
         word: Subregion2Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];
-        let row = get_word_row(word.index) + 3;
+        let row = get_word_row(word.index) + 6;
 
         // Assign lower sigma_v2 pieces
         self.assign_lower_sigma_v2_pieces(region, row, &word)?;
@@ -529,7 +531,7 @@ impl MessageScheduleConfig {
         word: Subregion2Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];
-        let row = get_word_row(word.index) + SIGMA_0_V2_ROWS + 3;
+        let row = get_word_row(word.index) + SIGMA_0_V2_ROWS + 6;
 
         // Assign lower sigma_v2 pieces
         self.assign_lower_sigma_v2_pieces(region, row, &word)?;

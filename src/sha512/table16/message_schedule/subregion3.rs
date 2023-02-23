@@ -14,11 +14,11 @@ pub struct Subregion3Word {
     index: usize,
     #[allow(dead_code)]
     a: AssignedBits<6>,
-    b: AssignedBits<13>,
-    c_lo_lo: AssignedBits<11>,
-    c_lo_hi: AssignedBits<10>,
-    c_hi_lo: AssignedBits<11>,
-    c_hi_hi: AssignedBits<10>,
+    _b: AssignedBits<13>,
+    _c_lo_lo: AssignedBits<11>,
+    _c_lo_hi: AssignedBits<10>,
+    _c_hi_lo: AssignedBits<11>,
+    _c_hi_hi: AssignedBits<10>,
     #[allow(dead_code)]
     d: AssignedBits<3>,
     spread_b: AssignedBits<26>,
@@ -166,7 +166,7 @@ impl MessageScheduleConfig {
                 get_word_row(new_word_idx - 16) + 1,
             )?;
 
-            // Copy W_{i - 7}
+            // // Copy W_{i - 7}
             w_halves[new_word_idx - 7].0.copy_advice(
                 || format!("W_{}_lo", new_word_idx - 7),
                 region,
@@ -255,23 +255,23 @@ impl MessageScheduleConfig {
 
         // Assign `b` (13-bit piece)
         let spread_b = pieces[1].clone().map(SpreadWord::try_new);
-        let spread_b = SpreadVar::with_lookup(region, &self.lookup, row - 1, spread_b)?;
+        let spread_b = SpreadVar::with_lookup(region, &self.lookup, row, spread_b)?;
 
         // Assign `c_lo_lo` (11-bit piece)
         let spread_c_lo_lo = pieces[2].clone().map(SpreadWord::try_new);
-        let spread_c_lo_lo = SpreadVar::with_lookup(region, &self.lookup, row, spread_c_lo_lo)?;
+        let spread_c_lo_lo = SpreadVar::with_lookup(region, &self.lookup, row + 1, spread_c_lo_lo)?;
 
         // Assign `c_lo_hi` (10-bit piece)
         let spread_c_lo_hi = pieces[3].clone().map(SpreadWord::try_new);
-        let spread_c_lo_hi = SpreadVar::with_lookup(region, &self.lookup, row + 1, spread_c_lo_hi)?;
+        let spread_c_lo_hi = SpreadVar::with_lookup(region, &self.lookup, row + 2, spread_c_lo_hi)?;
 
         // Assign `c_hi_lo` (11-bit piece)
         let spread_c_hi_lo = pieces[4].clone().map(SpreadWord::try_new);
-        let spread_c_hi_lo = SpreadVar::with_lookup(region, &self.lookup, row + 2, spread_c_hi_lo)?;
+        let spread_c_hi_lo = SpreadVar::with_lookup(region, &self.lookup, row + 3, spread_c_hi_lo)?;
 
         // Assign `c_hi_hi` (10-bit piece)
         let spread_c_hi_hi = pieces[5].clone().map(SpreadWord::try_new);
-        let spread_c_hi_hi = SpreadVar::with_lookup(region, &self.lookup, row + 3, spread_c_hi_hi)?;
+        let spread_c_hi_hi = SpreadVar::with_lookup(region, &self.lookup, row + 4, spread_c_hi_hi)?;
 
         // Assign `d` (3-bit piece) lookup
         let d = AssignedBits::<3>::assign_bits(region, || "d", a_3, row + 1, pieces[6].clone())?;
@@ -281,11 +281,11 @@ impl MessageScheduleConfig {
         Ok(Subregion3Word {
             index,
             a,
-            b: spread_b.dense,
-            c_lo_lo: spread_c_lo_lo.dense,
-            c_lo_hi: spread_c_lo_hi.dense,
-            c_hi_lo: spread_c_hi_lo.dense,
-            c_hi_hi: spread_c_hi_hi.dense,
+            _b: spread_b.dense,
+            _c_lo_lo: spread_c_lo_lo.dense,
+            _c_lo_hi: spread_c_lo_hi.dense,
+            _c_hi_lo: spread_c_hi_lo.dense,
+            _c_hi_hi: spread_c_hi_hi.dense,
             d,
             spread_b: spread_b.spread,
             spread_c_lo_lo: spread_c_lo_lo.spread,
@@ -304,9 +304,8 @@ impl MessageScheduleConfig {
         let a_4 = self.extras[1];
         let a_5 = self.message_schedule;
         let a_6 = self.extras[2];
-        let a_7 = self.extras[3];
 
-        let row = get_word_row(word.index) + 3;
+        let row = get_word_row(word.index) + 6;
 
         // Split `a` (6-bit chunk) into (3, 3)-bit `a_lo`, `a_hi`.
         // Assign `a_lo`, `spread_a_lo`, `a_hi`, `spread_a_hi`.
@@ -322,7 +321,7 @@ impl MessageScheduleConfig {
         {
             let a_hi: Value<[bool; 3]> = word.a.value().map(|v| v[3..6].try_into().unwrap());
             let a_hi = a_hi.map(SpreadWord::<3, 6>::new);
-            SpreadVar::without_lookup(region, a_5, row + 1, a_6, row + 1, a_hi)?;
+            SpreadVar::without_lookup(region, a_6, row - 1, a_6, row + 1, a_hi)?;
         }
 
         // Assign `a` and copy constraint
@@ -338,10 +337,10 @@ impl MessageScheduleConfig {
         word.spread_c_lo_hi.copy_advice(|| "c_lo_hi", region, a_4, row)?;
 
         // Assign `spread_c_hi_lo` and copy constraint
-        word.spread_c_hi_lo.copy_advice(|| "c_hi_lo", region, a_7, row - 1)?;
+        word.spread_c_hi_lo.copy_advice(|| "c_hi_lo", region, a_4, row + 2)?;
 
         // Assign `spread_c_hi_hi` and copy constraint
-        word.spread_c_hi_hi.copy_advice(|| "c_hi_hi", region, a_7, row)?;
+        word.spread_c_hi_hi.copy_advice(|| "c_hi_hi", region, a_6, row + 2)?;
 
         // Assign `d` and copy constraint
         word.d.copy_advice(|| "d", region, a_3, row + 1)?;

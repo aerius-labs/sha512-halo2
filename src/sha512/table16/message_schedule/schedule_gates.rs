@@ -191,10 +191,14 @@ impl<F: PrimeField> ScheduleGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_lower_sigma_0(
         s_lower_sigma_0: Expression<F>,
-        spread_r0_even: Expression<F>,
-        spread_r0_odd: Expression<F>,
-        spread_r1_even: Expression<F>,
-        spread_r1_odd: Expression<F>,
+        spread_r0_even_lo: Expression<F>,
+        spread_r0_even_hi: Expression<F>,
+        spread_r0_odd_lo: Expression<F>,
+        spread_r0_odd_hi: Expression<F>,
+        spread_r1_even_lo: Expression<F>,
+        spread_r1_even_hi: Expression<F>,
+        spread_r1_odd_lo: Expression<F>,
+        spread_r1_odd_hi: Expression<F>,
         spread_a: Expression<F>,
         b: Expression<F>,
         b_lo: Expression<F>,
@@ -215,9 +219,9 @@ impl<F: PrimeField> ScheduleGate<F> {
                 ));
                
         let check_b = Self::check_b(b, b_lo, b_hi);
-        let spread_witness = spread_r0_even
-            + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
+        let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
+            + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_c.clone()
             + spread_d_lo_lo.clone() * F::from(1 << 2)
             + spread_d_lo_hi.clone() * F::from(1 << 30)
@@ -252,10 +256,14 @@ impl<F: PrimeField> ScheduleGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_lower_sigma_1(
         s_lower_sigma_1: Expression<F>,
-        spread_r0_even: Expression<F>,
-        spread_r0_odd: Expression<F>,
-        spread_r1_even: Expression<F>,
-        spread_r1_odd: Expression<F>,
+        spread_r0_even_lo: Expression<F>,
+        spread_r0_even_hi: Expression<F>,
+        spread_r0_odd_lo: Expression<F>,
+        spread_r0_odd_hi: Expression<F>,
+        spread_r1_even_lo: Expression<F>,
+        spread_r1_even_hi: Expression<F>,
+        spread_r1_odd_lo: Expression<F>,
+        spread_r1_odd_hi: Expression<F>,
         a: Expression<F>,
         a_lo: Expression<F>,
         a_hi: Expression<F>,
@@ -274,15 +282,16 @@ impl<F: PrimeField> ScheduleGate<F> {
                 .chain(Gate::three_bit_spread_and_range(a_hi.clone(), spread_a_hi.clone(),))
                 .chain(Gate::three_bit_spread_and_range(d.clone(), spread_d.clone()));
         // a_lo + 2^3 * a_hi = a, on W_[49..77]
-        // let check_a = Self::check_b(a, a_lo, a_hi);
-        let check_a1 = {
-            let expected_a = a_lo + a_hi * F::from(1 << 3);
-            expected_a - a
-        };
+        let check_a1 = Self::check_b(a, a_lo, a_hi);
+        
+        // let check_a1 = {
+        //     let expected_a = a_lo + a_hi * F::from(1 << 3);
+        //     expected_a - a
+        // };
 
-        let spread_witness = spread_r0_even
-            + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
+        let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
+            + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_b.clone()
             + spread_c_lo_lo.clone() * F::from(1 << 26)
             + spread_c_lo_hi.clone() * F::from(1 << 48)
@@ -318,10 +327,14 @@ impl<F: PrimeField> ScheduleGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_lower_sigma_0_v2(
         s_lower_sigma_0_v2: Expression<F>,
-        spread_r0_even: Expression<F>,
-        spread_r0_odd: Expression<F>,
-        spread_r1_even: Expression<F>,
-        spread_r1_odd: Expression<F>,
+        spread_r0_even_lo: Expression<F>,
+        spread_r0_even_hi: Expression<F>,
+        spread_r0_odd_lo: Expression<F>,
+        spread_r0_odd_hi: Expression<F>,
+        spread_r1_even_lo: Expression<F>,
+        spread_r1_even_hi: Expression<F>,
+        spread_r1_odd_lo: Expression<F>,
+        spread_r1_odd_hi: Expression<F>,
         spread_a: Expression<F>,
         b: Expression<F>,
         b_lo: Expression<F>,
@@ -347,9 +360,9 @@ impl<F: PrimeField> ScheduleGate<F> {
                 .chain(Gate::three_bit_spread_and_range(g, spread_g.clone()));
 
         let check_b = Self::check_b(b, b_lo, b_hi);
-        let spread_witness = spread_r0_even
-            + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
+        let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
+            + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_d.clone()
             + spread_e.clone() * F::from(1 << 2)
             + spread_f_lo_lo.clone() * F::from(1 << 24)
@@ -392,10 +405,14 @@ impl<F: PrimeField> ScheduleGate<F> {
     #[allow(clippy::too_many_arguments)]
     pub fn s_lower_sigma_1_v2(
         s_lower_sigma_1_v2: Expression<F>,
-        spread_r0_even: Expression<F>,
-        spread_r0_odd: Expression<F>,
-        spread_r1_even: Expression<F>,
-        spread_r1_odd: Expression<F>,
+        spread_r0_even_lo: Expression<F>,
+        spread_r0_even_hi: Expression<F>,
+        spread_r0_odd_lo: Expression<F>,
+        spread_r0_odd_hi: Expression<F>,
+        spread_r1_even_lo: Expression<F>,
+        spread_r1_even_hi: Expression<F>,
+        spread_r1_odd_lo: Expression<F>,
+        spread_r1_odd_hi: Expression<F>,
         spread_a: Expression<F>,
         b: Expression<F>,
         b_lo: Expression<F>,
@@ -421,9 +438,9 @@ impl<F: PrimeField> ScheduleGate<F> {
                 .chain(Gate::three_bit_spread_and_range(g, spread_g.clone()));
 
         let check_b = Self::check_b(b, b_lo, b_hi);
-        let spread_witness = spread_r0_even
-            + spread_r0_odd * F::from(2)
-            + (spread_r1_even + spread_r1_odd * F::from(2)) * F::from_u128(1 << 64);
+        let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
+            + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
         let xor_0 = spread_c.clone()
             + spread_d.clone() * F::from(1 << 2)
             + spread_e.clone() * F::from(1 << 4)

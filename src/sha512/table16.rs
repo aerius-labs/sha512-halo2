@@ -170,7 +170,7 @@ impl<const LEN: usize> AssignedBits<LEN> {
         .map(AssignedBits)
     }
 }
-
+#[allow(dead_code)]
 impl AssignedBits<16> {
     fn value_u16(&self) -> Value<u16> {
         self.value().map(|v| v.into())
@@ -471,6 +471,7 @@ trait Table16Assignment {
         ),
         Error,
     > {
+
          // Lookup R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r_0_even_lo: Value<[bool; 16]> = r_0_even.map(|r_0_even| r_0_even[..16].try_into().unwrap());
         let r_0_even_hi: Value<[bool; 16]> = r_0_even.map(|r_0_even| r_0_even[16..32].try_into().unwrap());
@@ -489,8 +490,7 @@ trait Table16Assignment {
         )?;
 
         let r_0_even_dense = Self::joindense(&r_0_even_lo,&r_0_even_hi);
-        let r_0_even_d = AssignedBits::<32>::assign_bits(region, || "r_0_even_d", a_3, row - 1, r_0_even_dense)?;
-
+        let r_0_even_d = AssignedBits::<32>::assign_bits(region, || "r_0_even_d", a_3, row + 2, r_0_even_dense)?;
 
         let r_0_odd_lo: Value<[bool; 16]> = r_0_odd.map(|r_0_odd| r_0_odd[..16].try_into().unwrap());
         let r_0_odd_hi: Value<[bool; 16]> = r_0_odd.map(|r_0_odd| r_0_odd[16..32].try_into().unwrap());
@@ -509,7 +509,7 @@ trait Table16Assignment {
         )?;
 
         let r_0_odd_dense = Self::joindense(&r_0_odd_lo,&r_0_odd_hi);
-        let r_0_odd_d = AssignedBits::<32>::assign_bits(region, || "r_0_odd_d", a_3, row + 1, r_0_odd_dense)?;
+        let r_0_odd_d = AssignedBits::<32>::assign_bits(region, || "r_0_odd_d", a_3, row + 3, r_0_odd_dense)?;
 
         let r_1_even_lo: Value<[bool; 16]> = r_1_even.map(|r_1_even| r_1_even[..16].try_into().unwrap());
         let r_1_even_hi: Value<[bool; 16]> = r_1_even.map(|r_1_even| r_1_even[16..32].try_into().unwrap());
@@ -528,7 +528,7 @@ trait Table16Assignment {
         )?;
 
         let r_1_even_dense = Self::joindense(&r_1_even_lo,&r_1_even_hi);
-        let r_1_even_d = AssignedBits::<32>::assign_bits(region, || "r_1_even_d", a_3, row + 3, r_1_even_dense)?;
+        let r_1_even_d = AssignedBits::<32>::assign_bits(region, || "r_1_even_d", a_3, row + 4, r_1_even_dense)?;
 
         let r_1_odd_lo: Value<[bool; 16]> = r_1_odd.map(|r_1_odd| r_1_odd[..16].try_into().unwrap());
         let r_1_odd_hi: Value<[bool; 16]> = r_1_odd.map(|r_1_odd| r_1_odd[16..32].try_into().unwrap());
@@ -549,14 +549,10 @@ trait Table16Assignment {
         let r_1_odd_dense = Self::joindense(&r_1_odd_lo,&r_1_odd_hi);
         let r_1_odd_d = AssignedBits::<32>::assign_bits(region, || "r_1_odd_d", a_3, row + 5, r_1_odd_dense)?;
 
-        // Assign and copy R_1^{odd}
-        r_1_odd_lo
-            .spread
-            .copy_advice(|| "Assign and copy R_1^{odd}_lo", region, a_3, row)?;
+        let r_1_odd_spread = Self::joinspread(&r_1_odd_lo,&r_1_odd_hi);
+        let _r_1_odd_s = AssignedBits::<64>::assign_bits(region, || "r_1_odd_d", a_3, row + 6, r_1_odd_spread)?;
 
-        r_1_odd_hi
-            .spread
-            .copy_advice(|| "Assign and copy R_1^{odd}_hi", region, a_3, row + 1)?;
+
 
         Ok((
             (r_0_even_d, r_1_even_d),
@@ -586,19 +582,20 @@ trait Table16Assignment {
 }
 
 #[cfg(test)]
-#[cfg(feature = "test-dev-graph")]
+// #[cfg(feature = "test-dev-graph")]
 mod tests {
     use super::super::{Sha512, BLOCK_SIZE};
     use super::{message_schedule::msg_schedule_test_input, Table16Chip, Table16Config};
     use halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
         pasta::pallas,
+        dev::MockProver,
         plonk::{Circuit, ConstraintSystem, Error},
     };
 
     #[test]
     fn print_sha512_circuit() {
-        use plotters::prelude::*;
+        // use plotters::prelude::*;
         struct MyCircuit {}
 
         impl Circuit<pallas::Base> for MyCircuit {
@@ -635,17 +632,11 @@ mod tests {
                 Ok(())
             }
         }
-
-        let root =
-            BitMapBackend::new("sha-512-table16-chip-layout.png", (1024, 3480)).into_drawing_area();
-        root.fill(&WHITE).unwrap();
-        let root = root
-            .titled("16-bit Table SHA-512 Chip", ("sans-serif", 60))
-            .unwrap();
-
-        let circuit = MyCircuit {};
-        halo2_proofs::dev::CircuitLayout::default()
-            .render::<pallas::Base, _, _>(17, &circuit, &root)
-            .unwrap();
+        let circuit: MyCircuit = MyCircuit {};
+        let prover = match MockProver::<pallas::Base>::run(19, &circuit, vec![]) {
+            Ok(prover) => prover,
+            Err(e) => panic!("{:?}", e),
+        };
+        prover.assert_satisfied();
     }
 }    
