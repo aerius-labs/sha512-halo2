@@ -1,9 +1,9 @@
 use super::super::{super::DIGEST_SIZE, BlockWord, RoundWordDense};
 use super::{compression_util::*, CompressionConfig, State};
-use ff::PrimeField;
 use halo2_proofs::{
+    arithmetic::FieldExt,
     circuit::{Region, Value},
-    pasta::pallas,
+    halo2curves::bn256,
     plonk::{Advice, Column, Error},
 };
 
@@ -11,7 +11,7 @@ impl CompressionConfig {
     #[allow(clippy::many_single_char_names)]
     pub fn assign_digest(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         state: State,
     ) -> Result<[BlockWord; DIGEST_SIZE], Error> {
         let a_3 = self.extras[0];
@@ -40,7 +40,7 @@ impl CompressionConfig {
             || "a",
             a_5,
             abcd_row,
-            || a.map(|a| pallas::Base::from_u128(a as u128)),
+            || a.map(|a| bn256::Fq::from_u128(a as u128)),
         )?;
 
         let b = self.assign_digest_word(region, abcd_row, a_6, a_7, a_8, b.dense_halves)?;
@@ -59,7 +59,7 @@ impl CompressionConfig {
             || "e",
             a_5,
             efgh_row,
-            || e.map(|e| pallas::Base::from_u128(e as u128)),
+            || e.map(|e| bn256::Fq::from_u128(e as u128)),
         )?;
 
         let f = self.assign_digest_word(region, efgh_row, a_6, a_7, a_8, f.dense_halves)?;
@@ -80,7 +80,7 @@ impl CompressionConfig {
 
     fn assign_digest_word(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         row: usize,
         lo_col: Column<Advice>,
         hi_col: Column<Advice>,
@@ -95,7 +95,7 @@ impl CompressionConfig {
             || "word",
             word_col,
             row,
-            || val.map(|val| pallas::Base::from(val)),
+            || val.map(|val| bn256::Fq::from(val)),
         )?;
 
         Ok(val)

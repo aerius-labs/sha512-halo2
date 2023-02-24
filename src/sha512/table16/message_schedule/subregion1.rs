@@ -2,7 +2,7 @@ use super::super::{util::*, AssignedBits, BlockWord, SpreadVar, SpreadWord, Tabl
 use super::{schedule_util::*, MessageScheduleConfig};
 use halo2_proofs::{
     circuit::{Region, Value},
-    pasta::pallas,
+    halo2curves::bn256,
     plonk::Error,
 };
 use std::convert::TryInto;
@@ -105,7 +105,7 @@ impl Subregion1Word {
 impl MessageScheduleConfig {
     pub fn assign_subregion1(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         input: &[BlockWord],
     ) -> Result<Vec<(AssignedBits<32>, AssignedBits<32>)>, Error> {
         assert_eq!(input.len(), SUBREGION_1_LEN);
@@ -131,7 +131,7 @@ impl MessageScheduleConfig {
     /// Pieces of length [1, 6, 1, 56]
     fn decompose_subregion1_word(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Value<[bool; 64]>,
         index: usize,
     ) -> Result<Subregion1Word, Error> {
@@ -201,7 +201,7 @@ impl MessageScheduleConfig {
     // (1, 6, 1, 56)-bit chunks
     fn lower_sigma_0(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Subregion1Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];

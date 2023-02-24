@@ -2,7 +2,7 @@ use super::super::{RoundWord, StateWord, STATE};
 use super::{compression_util::*, CompressionConfig, State};
 use halo2_proofs::{
     circuit::{Region, Value},
-    pasta::pallas,
+    halo2curves::bn256,
     plonk::Error,
 };
 
@@ -10,7 +10,7 @@ impl CompressionConfig {
     #[allow(clippy::many_single_char_names)]
     pub fn initialize_iv(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         iv: [u64; STATE],
     ) -> Result<State, Error> {
         let a_7 = self.extras[3];
@@ -54,7 +54,7 @@ impl CompressionConfig {
     #[allow(clippy::many_single_char_names)]
     pub fn initialize_state(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         state: State,
     ) -> Result<State, Error> {
         let a_7 = self.extras[3];
@@ -104,7 +104,7 @@ impl CompressionConfig {
 
     fn decompose_b(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         round_idx: InitialRound,
         b_val: Value<u64>,
     ) -> Result<RoundWord, Error> {
@@ -117,7 +117,7 @@ impl CompressionConfig {
 
     fn decompose_c(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         round_idx: InitialRound,
         c_val: Value<u64>,
     ) -> Result<RoundWord, Error> {
@@ -130,7 +130,7 @@ impl CompressionConfig {
 
     fn decompose_f(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         round_idx: InitialRound,
         f_val: Value<u64>,
     ) -> Result<RoundWord, Error> {
@@ -143,7 +143,7 @@ impl CompressionConfig {
 
     fn decompose_g(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         round_idx: InitialRound,
         g_val: Value<u64>,
     ) -> Result<RoundWord, Error> {

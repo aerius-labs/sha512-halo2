@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use super::{super::BLOCK_SIZE, AssignedBits, BlockWord, SpreadInputs, Table16Assignment, ROUNDS};
 use halo2_proofs::{
     circuit::Layouter,
-    pasta::pallas,
+    halo2curves::bn256,
     plonk::{Advice, Column, ConstraintSystem, Error, Selector},
     poly::Rotation,
 };
@@ -71,7 +71,7 @@ impl MessageScheduleConfig {
     /// itself.
     #[allow(clippy::many_single_char_names)]
     pub(super) fn configure(
-        meta: &mut ConstraintSystem<pallas::Base>,
+        meta: &mut ConstraintSystem<bn256::Fq>,
         lookup: SpreadInputs,
         message_schedule: Column<Advice>,
         extras: [Column<Advice>; 6],
@@ -356,7 +356,7 @@ impl MessageScheduleConfig {
     #[allow(clippy::type_complexity)]
     pub(super) fn process(
         &self,
-        layouter: &mut impl Layouter<pallas::Base>,
+        layouter: &mut impl Layouter<bn256::Fq>,
         input: [BlockWord; BLOCK_SIZE],
     ) -> Result<
         (
@@ -453,7 +453,7 @@ mod tests {
     use halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
         dev::MockProver,
-        pasta::pallas,
+        halo2curves::bn256,
         plonk::{Circuit, ConstraintSystem, Error},
     };
 
@@ -461,7 +461,7 @@ mod tests {
     fn message_schedule() {
         struct MyCircuit {}
 
-        impl Circuit<pallas::Base> for MyCircuit {
+        impl Circuit<bn256::Fq> for MyCircuit {
             type Config = Table16Config;
             type FloorPlanner = SimpleFloorPlanner;
 
@@ -469,14 +469,14 @@ mod tests {
                 MyCircuit {}
             }
 
-            fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
+            fn configure(meta: &mut ConstraintSystem<bn256::Fq>) -> Self::Config {
                 Table16Chip::configure(meta)
             }
 
             fn synthesize(
                 &self,
                 config: Self::Config,
-                mut layouter: impl Layouter<pallas::Base>,
+                mut layouter: impl Layouter<bn256::Fq>,
             ) -> Result<(), Error> {
                 // Load lookup table
                 SpreadTableChip::load(config.lookup.clone(), &mut layouter)?;
@@ -500,7 +500,7 @@ mod tests {
         }
 
         let circuit: MyCircuit = MyCircuit {};
-        let prover = match MockProver::<pallas::Base>::run(17, &circuit, vec![]) {
+        let prover = match MockProver::<bn256::Fq>::run(17, &circuit, vec![]) {
             Ok(prover) => prover,
             Err(e) => panic!("{:?}", e),
         };

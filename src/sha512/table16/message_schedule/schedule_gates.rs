@@ -1,12 +1,12 @@
 use super::super::Gate;
 
-use group::ff::{Field, PrimeField};
+use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::plonk::Expression;
 use std::marker::PhantomData;
 
-pub struct ScheduleGate<F: Field>(PhantomData<F>);
+pub struct ScheduleGate<F: FieldExt>(PhantomData<F>);
 
-impl<F: PrimeField> ScheduleGate<F> {
+impl<F: FieldExt> ScheduleGate<F> {
     /// s_word for W_16 to W_79
     #[allow(clippy::too_many_arguments)]
     pub fn s_word(
@@ -27,8 +27,8 @@ impl<F: PrimeField> ScheduleGate<F> {
 
         let word_check = lo
             + hi * F::from(1 << 32)
-            + (carry.clone() * F::from_u128(1 << 64) * (-F::ONE))
-            + (word * (-F::ONE));
+            + (carry.clone() * F::from_u128(1 << 64) * (-F::one()))
+            + (word * (-F::one()));
         let carry_check = Gate::range_check(carry, 0, 3);
 
         [("word_check", word_check), ("carry_check", carry_check)]
@@ -66,7 +66,7 @@ impl<F: PrimeField> ScheduleGate<F> {
         word: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
         let decompose_check =
-            a + b * F::from(1 << 1) + c * F::from(1 << 7) + d_lo_lo * F::from(1 << 8) + d_lo_hi * F::from(1 << 22) + d_hi_lo * F::from(1 << 36) + d_hi_hi * F::from(1 << 50) + word * (-F::ONE);
+            a + b * F::from(1 << 1) + c * F::from(1 << 7) + d_lo_lo * F::from(1 << 8) + d_lo_hi * F::from(1 << 22) + d_hi_lo * F::from(1 << 36) + d_hi_hi * F::from(1 << 50) + word * (-F::one());
         let range_check_tag_d_lo_lo = Gate::range_check(tag_d_lo_lo, 0, 3);
         let range_check_tag_d_lo_hi = Gate::range_check(tag_d_lo_hi, 0, 3);
         let range_check_tag_d_hi_lo = Gate::range_check(tag_d_hi_lo, 0, 3);
@@ -116,7 +116,7 @@ impl<F: PrimeField> ScheduleGate<F> {
             + f_hi_lo * F::from(1 << 40)
             + f_hi_hi * F::from(1 << 51)
             + g * F::from(1 << 61)
-            + word * (-F::ONE);
+            + word * (-F::one());
         let range_check_tag_e = Gate::range_check(tag_e, 0, 1);
         let range_check_tag_f_lo_lo = Gate::range_check(tag_f_lo_lo, 0, 1);
         let range_check_tag_f_lo_hi = Gate::range_check(tag_f_lo_hi, 0, 0);
@@ -161,7 +161,7 @@ impl<F: PrimeField> ScheduleGate<F> {
             + c_hi_lo * F::from(1 << 40)
             + c_hi_hi * F::from(1 << 51)
             + d * F::from(1 << 61)
-            + word * (-F::ONE);
+            + word * (-F::one());
         let range_check_tag_b = Gate::range_check(tag_b, 0, 2);
         let range_check_tag_c_lo_lo = Gate::range_check(tag_c_lo_lo, 0, 1);
         let range_check_tag_c_lo_hi = Gate::range_check(tag_c_lo_hi, 0, 0);

@@ -1,12 +1,13 @@
 use super::super::{util::*, AssignedBits, Bits, SpreadVar, SpreadWord, Table16Assignment};
 use super::{schedule_util::*, MessageScheduleConfig, MessageWord};
-use ff::PrimeField;
+
 use halo2_proofs::{
     circuit::{Region, Value},
-    pasta::pallas,
+    halo2curves::bn256,
     plonk::Error,
 };
 use std::convert::TryInto;
+use halo2_proofs::arithmetic::FieldExt;
 
 /// A word in subregion 2
 /// (1, 5, 1, 1, 11, 42, 3)-bit chunks
@@ -198,7 +199,7 @@ impl MessageScheduleConfig {
     // W_[14..65]
     pub fn assign_subregion2(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         lower_sigma_0_output: Vec<(AssignedBits<32>, AssignedBits<32>)>,
         w: &mut Vec<MessageWord>,
         w_halves: &mut Vec<(AssignedBits<32>, AssignedBits<32>)>,
@@ -298,13 +299,13 @@ impl MessageScheduleConfig {
                 || format!("W_{}", new_word_idx),
                 a_5,
                 get_word_row(new_word_idx - 16) + 1,
-                || word.map(|word| pallas::Base::from_u128(word as u128)),
+                || word.map(|word| bn256::Fq::from_u128(word as u128)),
             )?;
             region.assign_advice(
                 || format!("carry_{}", new_word_idx),
                 a_9,
                 get_word_row(new_word_idx - 16) + 1,
-                || carry.map(pallas::Base::from),
+                || carry.map(bn256::Fq::from),
             )?;
             let (word, halves) = self.assign_word_and_halves(region, word, new_word_idx)?;
             w.push(MessageWord(word));
@@ -333,7 +334,7 @@ impl MessageScheduleConfig {
     /// Pieces of length [1, 5, 1, 1, 11, 42, 3]
     fn decompose_word(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Value<&Bits<64>>,
         index: usize,
     ) -> Result<Subregion2Word, Error> {
@@ -420,7 +421,7 @@ impl MessageScheduleConfig {
     #[allow(clippy::type_complexity)]
     fn assign_lower_sigma_v2_pieces(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         row: usize,
         word: &Subregion2Word,
     ) -> Result<(), Error> {
@@ -491,7 +492,7 @@ impl MessageScheduleConfig {
 
     fn lower_sigma_0_v2(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Subregion2Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];
@@ -524,7 +525,7 @@ impl MessageScheduleConfig {
 
     fn lower_sigma_1_v2(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Subregion2Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];

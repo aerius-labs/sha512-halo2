@@ -2,7 +2,7 @@ use std::cmp::min;
 use std::convert::TryInto;
 use std::fmt;
 
-use group::ff::Field;
+use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::{
     circuit::{Chip, Layouter},
     plonk::Error,
@@ -18,7 +18,7 @@ pub const BLOCK_SIZE: usize = 16;
 const DIGEST_SIZE: usize = 8;
 
 /// The set of circuit instructions required to use the [`Sha512`] gadget.
-pub trait Sha512Instructions<F: Field>: Chip<F> {
+pub trait Sha512Instructions<F: FieldExt>: Chip<F> {
     /// Variable representing the SHA-512 internal state.
     type State: Clone + fmt::Debug;
     /// Variable representing a 64-bit word of the input block to the SHA-512 compression
@@ -59,14 +59,14 @@ pub struct Sha512Digest<BlockWord>([BlockWord; DIGEST_SIZE]);
 /// A gadget that constrains a SHA-512 invocation. It supports input at a granularity of
 /// 64 bits.
 #[derive(Debug)]
-pub struct Sha512<F: Field, CS: Sha512Instructions<F>> {
+pub struct Sha512<F: FieldExt, CS: Sha512Instructions<F>> {
     chip: CS,
     state: CS::State,
     cur_block: Vec<CS::BlockWord>,
     length: usize,
 }
 
-impl<F: Field, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
+impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
     /// Create a new hasher instance.
     pub fn new(chip: Sha512Chip, mut layouter: impl Layouter<F>) -> Result<Self, Error> {
         let state = chip.initialization_vector(&mut layouter)?;

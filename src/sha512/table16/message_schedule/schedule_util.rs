@@ -2,7 +2,7 @@ use super::super::AssignedBits;
 use super::MessageScheduleConfig;
 use halo2_proofs::{
     circuit::{Region, Value},
-    pasta::pallas,
+    halo2curves::bn256,
     plonk::Error,
 };
 
@@ -166,7 +166,7 @@ impl MessageScheduleConfig {
     // Assign a word and its hi and lo halves
     pub fn assign_word_and_halves(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Value<u64>,
         word_idx: usize,
     ) -> Result<(AssignedBits<64>, (AssignedBits<32>, AssignedBits<32>)), Error> {

@@ -1,14 +1,16 @@
 use super::super::{util::*, Gate};
 
-use group::ff::{Field, PrimeField};
-use halo2_proofs::plonk::{Constraint, Constraints, Expression};
+use halo2_proofs::plonk::{
+    Constraint, Constraints, Expression
+};
 use std::marker::PhantomData;
+use halo2_proofs::arithmetic::FieldExt;
 
-pub struct CompressionGate<F: Field>(PhantomData<F>);
+pub struct CompressionGate<F: FieldExt>(PhantomData<F>);
 
-impl<F: PrimeField> CompressionGate<F> {
+impl<F: FieldExt> CompressionGate<F> {
     fn ones() -> Expression<F> {
-        Expression::Constant(F::ONE)
+        Expression::Constant(F::one())
     }
 
     // Decompose `A,B,C,D` words
@@ -68,8 +70,8 @@ impl<F: PrimeField> CompressionGate<F> {
             + c_hi * F::from(1 << 36)
             + d_lo * F::from(1 << 39)
             + d_hi * F::from(1 << 53)
-            + word_lo * (-F::ONE)
-            + word_hi * F::from(1 << 32) * (-F::ONE);
+            + word_lo * (-F::one())
+            + word_hi * F::from(1 << 32) * (-F::one());
         let spread_check = spread_a_lo
             + spread_a_hi * F::from(1 << 28)
             + spread_b_lo * F::from(1 << 56)
@@ -78,8 +80,8 @@ impl<F: PrimeField> CompressionGate<F> {
             + spread_c_hi * F::from_u128(1 << 72)
             + spread_d_lo * F::from_u128(1 << 78)
             + spread_d_hi * F::from_u128(1 << 106)
-            + spread_word_lo * (-F::ONE)
-            + spread_word_hi * F::from_u128(1 << 64) * (-F::ONE);
+            + spread_word_lo * (-F::one())
+            + spread_word_hi * F::from_u128(1 << 64) * (-F::one());
 
         Constraints::with_selector(
             s_decompose_abcd,
@@ -147,8 +149,8 @@ impl<F: PrimeField> CompressionGate<F> {
             + c_hi * F::from(1 << 31)
             + d_lo * F::from(1 << 41)
             + d_hi * F::from(1 << 54)
-            + word_lo * (-F::ONE)
-            + word_hi * F::from(1 << 32) * (-F::ONE);
+            + word_lo * (-F::one())
+            + word_hi * F::from(1 << 32) * (-F::one());
         let spread_check = spread_a
             + spread_b_lo * F::from(1 << 28)
             + spread_b_hi * F::from(1 << 32)
@@ -156,8 +158,8 @@ impl<F: PrimeField> CompressionGate<F> {
             + spread_c_hi * F::from(1 << 62)
             + spread_d_lo * F::from_u128(1 << 82)
             + spread_d_hi * F::from_u128(1 << 108)
-            + spread_word_lo * (-F::ONE)
-            + spread_word_hi * F::from_u128(1 << 64) * (-F::ONE);
+            + spread_word_lo * (-F::one())
+            + spread_word_hi * F::from_u128(1 << 64) * (-F::one());
 
         Constraints::with_selector(
             s_decompose_efgh,
@@ -222,7 +224,7 @@ impl<F: PrimeField> CompressionGate<F> {
             + spread_c_lo * F::from_u128(1 << 118)
             + spread_c_hi * F::from_u128(1 << 122);
         let xor = xor_0 + xor_1 + xor_2;
-        let check = spread_witness + (xor * -F::ONE);
+        let check = spread_witness + (xor * -F::one());
 
         Some(("s_upper_sigma_0", s_upper_sigma_0 * check))
     }
@@ -274,7 +276,7 @@ impl<F: PrimeField> CompressionGate<F> {
             + spread_c_lo * F::from_u128(1 << 82)
             + spread_c_hi * F::from_u128(1 << 108);
         let xor = xor_0 + xor_1 + xor_2;
-        let check = spread_witness + (xor * -F::ONE);
+        let check = spread_witness + (xor * -F::one());
 
         Some(("s_upper_sigma_1", s_upper_sigma_1 * check))
     }
@@ -308,7 +310,7 @@ impl<F: PrimeField> CompressionGate<F> {
         let rhs_odd = spread_p0_odd + spread_p1_odd * F::from_u128(1 << 64);
         let rhs = rhs_even + rhs_odd * F::from(2);
 
-        let check = lhs + rhs * -F::ONE;
+        let check = lhs + rhs * -F::one();
 
         Some(("s_ch", s_ch * check))
     }
@@ -339,9 +341,9 @@ impl<F: PrimeField> CompressionGate<F> {
         let neg_check = {
             let evens = Self::ones() * F::from_u128(MASK_EVEN_64 as u128);
             // evens - spread_e_lo = spread_e_neg_lo
-            let lo_check = spread_e_neg_lo.clone() + spread_e_lo + (evens.clone() * (-F::ONE));
+            let lo_check = spread_e_neg_lo.clone() + spread_e_lo + (evens.clone() * (-F::one()));
             // evens - spread_e_hi = spread_e_neg_hi
-            let hi_check = spread_e_neg_hi.clone() + spread_e_hi + (evens * (-F::ONE));
+            let hi_check = spread_e_neg_hi.clone() + spread_e_hi + (evens * (-F::one()));
 
             std::iter::empty()
                 .chain(Some(("lo_check", lo_check)))

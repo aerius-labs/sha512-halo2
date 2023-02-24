@@ -1,11 +1,11 @@
-use group::ff::PrimeField;
+use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::plonk::Expression;
 
-pub struct Gate<F: PrimeField>(pub Expression<F>);
+pub struct Gate<F: FieldExt>(pub Expression<F>);
 
-impl<F: PrimeField> Gate<F> {
+impl<F: FieldExt> Gate<F> {
     fn ones() -> Expression<F> {
-        Expression::Constant(F::ONE)
+        Expression::Constant(F::one())
     }
 
     // Helper gates
@@ -33,7 +33,7 @@ impl<F: PrimeField> Gate<F> {
             for i in 0..deg {
                 let i = i as u64;
                 if i != idx {
-                    expr = expr * (Self::ones() * (-F::ONE) * F::from(i) + var.clone());
+                    expr = expr * (Self::ones() * (-F::one()) * F::from(i) + var.clone());
                 }
             }
             expr * F::from(u64::from(eval))
@@ -47,13 +47,13 @@ impl<F: PrimeField> Gate<F> {
                 }
             }
             if denom < 0 {
-                -F::ONE * F::from(factor / (-denom as u64))
+                -F::one() * F::from(factor / (-denom as u64))
             } else {
                 F::from(factor / (denom as u64))
             }
         };
 
-        let mut expr = Self::ones() * F::ZERO;
+        let mut expr = Self::ones() * F::zero();
         for ((idx, _), eval) in points.iter().enumerate().zip(evals.iter()) {
             expr = expr + numerator(var.clone(), *eval, idx as u64) * denominator(idx as i32)
         }
@@ -64,7 +64,7 @@ impl<F: PrimeField> Gate<F> {
     pub fn range_check(value: Expression<F>, lower_range: u64, upper_range: u64) -> Expression<F> {
         let mut expr = Self::ones();
         for i in lower_range..(upper_range + 1) {
-            expr = expr * (Self::ones() * (-F::ONE) * F::from(i) + value.clone())
+            expr = expr * (Self::ones() * (-F::one()) * F::from(i) + value.clone())
         }
         expr
     }

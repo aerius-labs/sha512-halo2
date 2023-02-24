@@ -1,9 +1,10 @@
 use super::super::{util::*, AssignedBits, Bits, SpreadVar, SpreadWord, Table16Assignment};
 use super::{schedule_util::*, MessageScheduleConfig, MessageWord};
-use ff::PrimeField;
+
 use halo2_proofs::{
+    arithmetic::FieldExt,
     circuit::{Region, Value},
-    pasta::pallas,
+    halo2curves::bn256,
     plonk::Error,
 };
 use std::convert::TryInto;
@@ -111,7 +112,7 @@ impl MessageScheduleConfig {
     // W_[65..78]
     pub fn assign_subregion3(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         lower_sigma_0_v2_output: Vec<(AssignedBits<32>, AssignedBits<32>)>,
         w: &mut Vec<MessageWord>,
         w_halves: &mut Vec<(AssignedBits<32>, AssignedBits<32>)>,
@@ -202,13 +203,13 @@ impl MessageScheduleConfig {
                 || format!("W_{}", new_word_idx),
                 a_5,
                 get_word_row(new_word_idx - 16) + 1,
-                || word.map(|word| pallas::Base::from_u128(word as u128)),
+                || word.map(|word| bn256::Fq::from_u128(word as u128)),
             )?;
             region.assign_advice(
                 || format!("carry_{}", new_word_idx),
                 a_9,
                 get_word_row(new_word_idx - 16) + 1,
-                || carry.map(|carry| pallas::Base::from_u128(carry as u128)),
+                || carry.map(|carry| bn256::Fq::from_u128(carry as u128)),
             )?;
             let (word, halves) = self.assign_word_and_halves(region, word, new_word_idx)?;
             w.push(MessageWord(word));
@@ -227,7 +228,7 @@ impl MessageScheduleConfig {
     /// Pieces of length [6, 13, 42, 3]
     fn decompose_subregion3_word(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Value<&Bits<64>>,
         index: usize,
     ) -> Result<Subregion3Word, Error> {
@@ -297,7 +298,7 @@ impl MessageScheduleConfig {
 
     fn lower_sigma_1(
         &self,
-        region: &mut Region<'_, pallas::Base>,
+        region: &mut Region<'_, bn256::Fq>,
         word: Subregion3Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];
