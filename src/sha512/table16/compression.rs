@@ -517,7 +517,7 @@ impl Table16Assignment for CompressionConfig {}
 
 impl CompressionConfig {
     pub(super) fn configure(
-        meta: &mut ConstraintSystem<bn256::Fq>,
+        meta: &mut ConstraintSystem<bn256::Fr>,
         lookup: SpreadInputs,
         message_schedule: Column<Advice>,
         extras: [Column<Advice>; 6],
@@ -997,7 +997,7 @@ impl CompressionConfig {
     /// Returns an initialized state.
     pub(super) fn initialize_with_iv(
         &self,
-        layouter: &mut impl Layouter<bn256::Fq>,
+        layouter: &mut impl Layouter<bn256::Fr>,
         init_state: [u64; STATE],
     ) -> Result<State, Error> {
         let mut new_state = State::empty_state();
@@ -1015,7 +1015,7 @@ impl CompressionConfig {
     /// output from a previous compression round.
     pub(super) fn initialize_with_state(
         &self,
-        layouter: &mut impl Layouter<bn256::Fq>,
+        layouter: &mut impl Layouter<bn256::Fr>,
         init_state: State,
     ) -> Result<State, Error> {
         let mut new_state = State::empty_state();
@@ -1032,7 +1032,7 @@ impl CompressionConfig {
     /// Given an initialized state and a message schedule, perform 80 compression rounds.
     pub(super) fn compress(
         &self,
-        layouter: &mut impl Layouter<bn256::Fq>,
+        layouter: &mut impl Layouter<bn256::Fr>,
         initialized_state: State,
         w_halves: [(AssignedBits<32>, AssignedBits<32>); ROUNDS],
     ) -> Result<State, Error> {
@@ -1053,7 +1053,7 @@ impl CompressionConfig {
     /// After the final round, convert the state into the final digest.
     pub(super) fn digest(
         &self,
-        layouter: &mut impl Layouter<bn256::Fq>,
+        layouter: &mut impl Layouter<bn256::Fr>,
         state: State,
     ) -> Result<[BlockWord; DIGEST_SIZE], Error> {
         let mut digest = [BlockWord(Value::known(0)); DIGEST_SIZE];
@@ -1084,7 +1084,7 @@ mod tests {
     fn compress() {
         struct MyCircuit {}
 
-        impl Circuit<bn256::Fq> for MyCircuit {
+        impl Circuit<bn256::Fr> for MyCircuit {
             type Config = Table16Config;
             type FloorPlanner = SimpleFloorPlanner;
 
@@ -1092,14 +1092,14 @@ mod tests {
                 MyCircuit {}
             }
 
-            fn configure(meta: &mut ConstraintSystem<bn256::Fq>) -> Self::Config {
+            fn configure(meta: &mut ConstraintSystem<bn256::Fr>) -> Self::Config {
                 Table16Chip::configure(meta)
             }
 
             fn synthesize(
                 &self,
                 config: Self::Config,
-                mut layouter: impl Layouter<bn256::Fq>,
+                mut layouter: impl Layouter<bn256::Fr>,
             ) -> Result<(), Error> {
                 Table16Chip::load(config.clone(), &mut layouter)?;
 
@@ -1129,7 +1129,7 @@ mod tests {
 
         let circuit: MyCircuit = MyCircuit {};
 
-        let prover = match MockProver::<bn256::Fq>::run(19, &circuit, vec![]) {
+        let prover = match MockProver::<bn256::Fr>::run(19, &circuit, vec![]) {
             Ok(prover) => prover,
             Err(e) => panic!("{:?}", e),
         };

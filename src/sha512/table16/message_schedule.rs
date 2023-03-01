@@ -71,7 +71,7 @@ impl MessageScheduleConfig {
     /// itself.
     #[allow(clippy::many_single_char_names)]
     pub(super) fn configure(
-        meta: &mut ConstraintSystem<bn256::Fq>,
+        meta: &mut ConstraintSystem<bn256::Fr>,
         lookup: SpreadInputs,
         message_schedule: Column<Advice>,
         extras: [Column<Advice>; 6],
@@ -356,7 +356,7 @@ impl MessageScheduleConfig {
     #[allow(clippy::type_complexity)]
     pub(super) fn process(
         &self,
-        layouter: &mut impl Layouter<bn256::Fq>,
+        layouter: &mut impl Layouter<bn256::Fr>,
         input: [BlockWord; BLOCK_SIZE],
     ) -> Result<
         (
@@ -461,7 +461,7 @@ mod tests {
     fn message_schedule() {
         struct MyCircuit {}
 
-        impl Circuit<bn256::Fq> for MyCircuit {
+        impl Circuit<bn256::Fr> for MyCircuit {
             type Config = Table16Config;
             type FloorPlanner = SimpleFloorPlanner;
 
@@ -469,14 +469,14 @@ mod tests {
                 MyCircuit {}
             }
 
-            fn configure(meta: &mut ConstraintSystem<bn256::Fq>) -> Self::Config {
+            fn configure(meta: &mut ConstraintSystem<bn256::Fr>) -> Self::Config {
                 Table16Chip::configure(meta)
             }
 
             fn synthesize(
                 &self,
                 config: Self::Config,
-                mut layouter: impl Layouter<bn256::Fq>,
+                mut layouter: impl Layouter<bn256::Fr>,
             ) -> Result<(), Error> {
                 // Load lookup table
                 SpreadTableChip::load(config.lookup.clone(), &mut layouter)?;
@@ -500,7 +500,7 @@ mod tests {
         }
 
         let circuit: MyCircuit = MyCircuit {};
-        let prover = match MockProver::<bn256::Fq>::run(17, &circuit, vec![]) {
+        let prover = match MockProver::<bn256::Fr>::run(17, &circuit, vec![]) {
             Ok(prover) => prover,
             Err(e) => panic!("{:?}", e),
         };

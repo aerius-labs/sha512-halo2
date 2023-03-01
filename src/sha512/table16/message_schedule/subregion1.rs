@@ -105,7 +105,7 @@ impl Subregion1Word {
 impl MessageScheduleConfig {
     pub fn assign_subregion1(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         input: &[BlockWord],
     ) -> Result<Vec<(AssignedBits<32>, AssignedBits<32>)>, Error> {
         assert_eq!(input.len(), SUBREGION_1_LEN);
@@ -131,7 +131,7 @@ impl MessageScheduleConfig {
     /// Pieces of length [1, 6, 1, 56]
     fn decompose_subregion1_word(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         word: Value<[bool; 64]>,
         index: usize,
     ) -> Result<Subregion1Word, Error> {
@@ -201,7 +201,7 @@ impl MessageScheduleConfig {
     // (1, 6, 1, 56)-bit chunks
     fn lower_sigma_0(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         word: Subregion1Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];

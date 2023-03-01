@@ -166,7 +166,7 @@ impl MessageScheduleConfig {
     // Assign a word and its hi and lo halves
     pub fn assign_word_and_halves(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         word: Value<u64>,
         word_idx: usize,
     ) -> Result<(AssignedBits<64>, (AssignedBits<32>, AssignedBits<32>)), Error> {

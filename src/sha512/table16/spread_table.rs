@@ -73,7 +73,7 @@ pub(super) struct SpreadVar<const DENSE: usize, const SPREAD: usize> {
 
 impl<const DENSE: usize, const SPREAD: usize> SpreadVar<DENSE, SPREAD> {
     pub(super) fn with_lookup(
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         cols: &SpreadInputs,
         row: usize,
         word: Value<SpreadWord<DENSE, SPREAD>>,
@@ -86,7 +86,7 @@ impl<const DENSE: usize, const SPREAD: usize> SpreadVar<DENSE, SPREAD> {
             || "tag",
             cols.tag,
             row,
-            || tag.map(|tag| bn256::Fq::from(tag as u64)),
+            || tag.map(|tag| bn256::Fr::from(tag as u64)),
         )?;
 
         let dense =
@@ -103,7 +103,7 @@ impl<const DENSE: usize, const SPREAD: usize> SpreadVar<DENSE, SPREAD> {
     }
 
     pub(super) fn without_lookup(
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         dense_col: Column<Advice>,
         dense_row: usize,
         spread_col: Column<Advice>,

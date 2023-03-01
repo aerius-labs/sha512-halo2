@@ -6,7 +6,7 @@ impl CompressionConfig {
     #[allow(clippy::many_single_char_names)]
     pub fn assign_round(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         state: State,
         schedule_word: &(AssignedBits<32>, AssignedBits<32>),

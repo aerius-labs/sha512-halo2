@@ -202,7 +202,7 @@ pub fn get_digest_efgh_row() -> usize {
 impl CompressionConfig {
     pub(super) fn decompose_abcd(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         row: usize,
         val: Value<u64>,
     ) -> Result<AbcdVar, Error> {
@@ -287,7 +287,7 @@ impl CompressionConfig {
 
     pub(super) fn decompose_efgh(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         row: usize,
         val: Value<u64>,
     ) -> Result<EfghVar, Error> {
@@ -360,7 +360,7 @@ impl CompressionConfig {
 
     pub(super) fn decompose_a(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: RoundIdx,
         a_val: Value<u64>,
     ) -> Result<RoundWordA, Error> {
@@ -373,7 +373,7 @@ impl CompressionConfig {
 
     pub(super) fn decompose_e(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: RoundIdx,
         e_val: Value<u64>,
     ) -> Result<RoundWordE, Error> {
@@ -386,7 +386,7 @@ impl CompressionConfig {
 
     pub(super) fn assign_upper_sigma_0(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         word: AbcdVar,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
@@ -457,7 +457,7 @@ impl CompressionConfig {
 
     pub(super) fn assign_upper_sigma_1(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         word: EfghVar,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
@@ -516,7 +516,7 @@ impl CompressionConfig {
 
     fn assign_ch_outputs(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         row: usize,
         r_0_even: Value<[bool; 32]>,
         r_0_odd: Value<[bool; 32]>,
@@ -541,7 +541,7 @@ impl CompressionConfig {
 
     pub(super) fn assign_ch(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         spread_halves_e: RoundWordSpread,
         spread_halves_f: RoundWordSpread,
@@ -587,7 +587,7 @@ impl CompressionConfig {
 
     pub(super) fn assign_ch_neg(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         spread_halves_e: RoundWordSpread,
         spread_halves_g: RoundWordSpread,
@@ -666,7 +666,7 @@ impl CompressionConfig {
 
     fn assign_maj_outputs(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         row: usize,
         r_0_even: Value<[bool; 32]>,
         r_0_odd: Value<[bool; 32]>,
@@ -690,7 +690,7 @@ impl CompressionConfig {
 
     pub(super) fn assign_maj(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         spread_halves_a: RoundWordSpread,
         spread_halves_b: RoundWordSpread,
@@ -748,7 +748,7 @@ impl CompressionConfig {
     #[allow(clippy::too_many_arguments)]
     pub(super) fn assign_h_prime(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         h: RoundWordDense,
         ch: (AssignedBits<32>, AssignedBits<32>),
@@ -814,7 +814,7 @@ impl CompressionConfig {
                 || "h_prime_carry",
                 a_9,
                 row + 1,
-                || h_prime_carry.map(bn256::Fq::from),
+                || h_prime_carry.map(bn256::Fr::from),
             )?;
 
             let h_prime: Value<[bool; 64]> = h_prime.map(|w| i2lebsp(w.into()));
@@ -833,7 +833,7 @@ impl CompressionConfig {
     // s_e_new to get E_new = H' + D
     pub(super) fn assign_e_new(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         d: &RoundWordDense,
         h_prime: &RoundWordDense,
@@ -861,7 +861,7 @@ impl CompressionConfig {
             || "e_new_carry",
             a_9,
             row + 1,
-            || e_new_carry.map(bn256::Fq::from),
+            || e_new_carry.map(bn256::Fr::from),
         )?;
 
         Ok(e_new_dense)
@@ -870,7 +870,7 @@ impl CompressionConfig {
     // s_a_new to get A_new = H' + Maj(A, B, C) + s_upper_sigma_0(A)
     pub(super) fn assign_a_new(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         round_idx: MainRoundIdx,
         maj: (AssignedBits<32>, AssignedBits<32>),
         sigma_0: (AssignedBits<32>, AssignedBits<32>),
@@ -916,7 +916,7 @@ impl CompressionConfig {
             || "a_new_carry",
             a_9,
             row,
-            || a_new_carry.map(bn256::Fq::from),
+            || a_new_carry.map(bn256::Fr::from),
         )?;
 
         Ok(a_new_dense)
@@ -924,7 +924,7 @@ impl CompressionConfig {
 
     pub fn assign_word_halves_dense(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         lo_row: usize,
         lo_col: Column<Advice>,
         hi_row: usize,
@@ -980,7 +980,7 @@ impl CompressionConfig {
     #[allow(clippy::type_complexity)]
     pub fn assign_word_halves(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         row: usize,
         word: Value<u64>,
     ) -> Result<(RoundWordDense, RoundWordSpread), Error> {

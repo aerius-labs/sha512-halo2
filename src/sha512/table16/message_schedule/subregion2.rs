@@ -199,7 +199,7 @@ impl MessageScheduleConfig {
     // W_[14..65]
     pub fn assign_subregion2(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         lower_sigma_0_output: Vec<(AssignedBits<32>, AssignedBits<32>)>,
         w: &mut Vec<MessageWord>,
         w_halves: &mut Vec<(AssignedBits<32>, AssignedBits<32>)>,
@@ -299,13 +299,13 @@ impl MessageScheduleConfig {
                 || format!("W_{}", new_word_idx),
                 a_5,
                 get_word_row(new_word_idx - 16) + 1,
-                || word.map(|word| bn256::Fq::from_u128(word as u128)),
+                || word.map(|word| bn256::Fr::from_u128(word as u128)),
             )?;
             region.assign_advice(
                 || format!("carry_{}", new_word_idx),
                 a_9,
                 get_word_row(new_word_idx - 16) + 1,
-                || carry.map(bn256::Fq::from),
+                || carry.map(bn256::Fr::from),
             )?;
             let (word, halves) = self.assign_word_and_halves(region, word, new_word_idx)?;
             w.push(MessageWord(word));
@@ -334,7 +334,7 @@ impl MessageScheduleConfig {
     /// Pieces of length [1, 5, 1, 1, 11, 42, 3]
     fn decompose_word(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         word: Value<&Bits<64>>,
         index: usize,
     ) -> Result<Subregion2Word, Error> {
@@ -421,7 +421,7 @@ impl MessageScheduleConfig {
     #[allow(clippy::type_complexity)]
     fn assign_lower_sigma_v2_pieces(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         row: usize,
         word: &Subregion2Word,
     ) -> Result<(), Error> {
@@ -492,7 +492,7 @@ impl MessageScheduleConfig {
 
     fn lower_sigma_0_v2(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         word: Subregion2Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];
@@ -525,7 +525,7 @@ impl MessageScheduleConfig {
 
     fn lower_sigma_1_v2(
         &self,
-        region: &mut Region<'_, bn256::Fq>,
+        region: &mut Region<'_, bn256::Fr>,
         word: Subregion2Word,
     ) -> Result<(AssignedBits<32>, AssignedBits<32>), Error> {
         let a_3 = self.extras[0];
