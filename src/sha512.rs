@@ -10,7 +10,7 @@ use halo2_proofs::{
 
 mod table16;
 
-pub use table16::{BlockWord, Table16Chip, Table16Config};
+pub use table16::{BlockWord, Table16Chip, Table16Config,IV};
 
 /// The size of a SHA-512 block, in 64-bit words.
 pub const BLOCK_SIZE: usize = 16;
@@ -54,7 +54,7 @@ pub trait Sha512Instructions<F: FieldExt>: Chip<F> {
 
 /// The output of a SHA-512 circuit invocation.
 #[derive(Debug)]
-pub struct Sha512Digest<BlockWord>([BlockWord; DIGEST_SIZE]);
+pub struct Sha512Digest<BlockWord>(pub [BlockWord; DIGEST_SIZE]);
 
 /// A gadget that constrains a SHA-512 invocation. It supports input at a granularity of
 /// 64 bits.

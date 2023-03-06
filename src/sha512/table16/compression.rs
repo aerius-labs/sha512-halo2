@@ -1116,8 +1116,10 @@ mod tests {
                     .compress(&mut layouter, initial_state, w_halves)?;
 
                 let digest = config.compression.digest(&mut layouter, state)?;
+                println!("{:?}",digest);
                 for (idx, digest_word) in digest.iter().enumerate() {
                     digest_word.0.assert_if_known(|digest_word| {
+                        println!("{:?},  {:?}",*digest_word,IV[idx]);
                         (*digest_word as u128 + IV[idx] as u128) as u64
                             == super::compression_util::COMPRESSION_OUTPUT[idx]
                     });

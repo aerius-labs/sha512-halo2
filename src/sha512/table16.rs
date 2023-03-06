@@ -43,7 +43,7 @@ pub(crate) const ROUND_CONSTANTS: [u64; ROUNDS] = [
             0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817,
 ];
 
-const IV: [u64; STATE] = [
+pub const IV: [u64; STATE] = [
     0x6a09e667f3bcc908, 
     0xbb67ae8584caa73b, 
     0x3c6ef372fe94f82b, 
