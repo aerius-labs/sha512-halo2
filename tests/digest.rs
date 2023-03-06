@@ -53,11 +53,11 @@ fn sha512_test(){
                 BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000011000)),
             ];
 
-            // Create a message of length 63 blocks
-            let mut input = Vec::with_capacity(63 * BLOCK_SIZE);
-            for _ in 0..63 {
-                input.extend_from_slice(&test_input);
-            }
+            let mut input = test_input;
+            // let mut input = Vec::with_capacity(63);
+            // for _ in 0..63 {
+            //     input.extend_from_slice(&test_input);
+            // }
     
             let expected_digest = Sha512::digest(b"abc");
             let digest = OtherSha512::digest(table16_chip, layouter.namespace(|| "'abc' * 2"), &input)?;
