@@ -21,6 +21,10 @@ plotters = { version = "0.3.0", default-features = false, optional = true }
 tabbycat = { version = "0.1", features = ["attributes"], optional = true }
 hex-literal = "0.2.2"
 sha2 = "0.10.6"
+criterion = "0.3"
+rand_chacha = "0.3"
+rand_xorshift = "0.3"
+ark-std = { version = "0.3", features = ["print-trace"] }
 
 [features]
 dev-graph = ["plotters", "tabbycat"]
