@@ -1,13 +1,13 @@
 use super::super::{util::*, AssignedBits, Bits, SpreadVar, SpreadWord, Table16Assignment};
 use super::{schedule_util::*, MessageScheduleConfig, MessageWord};
 
+use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::{
     circuit::{Region, Value},
     halo2curves::bn256,
     plonk::Error,
 };
 use std::convert::TryInto;
-use halo2_proofs::arithmetic::FieldExt;
 
 /// A word in subregion 2
 /// (1, 5, 1, 1, 11, 42, 3)-bit chunks
@@ -32,7 +32,7 @@ pub struct Subregion2Word {
 }
 
 impl Subregion2Word {
-    fn spread_a(&self) -> Value<[bool;2]> {
+    fn spread_a(&self) -> Value<[bool; 2]> {
         self.a.value().map(|v| v.spread())
     }
 
@@ -83,54 +83,56 @@ impl Subregion2Word {
             .zip(self.spread_f_hi_lo())
             .zip(self.spread_f_hi_hi())
             .zip(self.spread_g())
-            .map(|(((((((((a, b), c), d), e), f_lo_lo), f_lo_hi), f_hi_lo), f_hi_hi), g)| {
-                let xor_0 = d
-                    .iter()
-                    .chain(e.iter())
-                    .chain(f_lo_lo.iter())
-                    .chain(f_lo_hi.iter())
-                    .chain(f_hi_lo.iter())
-                    .chain(f_hi_hi.iter())
-                    .chain(g.iter())
-                    .chain(std::iter::repeat(&false).take(2))
-                    .chain(std::iter::repeat(&false).take(10))
-                    .chain(std::iter::repeat(&false).take(2))
-                    .copied()
-                    .collect::<Vec<_>>();
+            .map(
+                |(((((((((a, b), c), d), e), f_lo_lo), f_lo_hi), f_hi_lo), f_hi_hi), g)| {
+                    let xor_0 = d
+                        .iter()
+                        .chain(e.iter())
+                        .chain(f_lo_lo.iter())
+                        .chain(f_lo_hi.iter())
+                        .chain(f_hi_lo.iter())
+                        .chain(f_hi_hi.iter())
+                        .chain(g.iter())
+                        .chain(std::iter::repeat(&false).take(2))
+                        .chain(std::iter::repeat(&false).take(10))
+                        .chain(std::iter::repeat(&false).take(2))
+                        .copied()
+                        .collect::<Vec<_>>();
 
-                let xor_1 = b
-                    .iter()
-                    .chain(c.iter())
-                    .chain(d.iter())
-                    .chain(e.iter())
-                    .chain(f_lo_lo.iter())
-                    .chain(f_lo_hi.iter())
-                    .chain(f_hi_lo.iter())
-                    .chain(f_hi_hi.iter())
-                    .chain(g.iter())
-                    .chain(a.iter())
-                    .copied()
-                    .collect::<Vec<_>>();
+                    let xor_1 = b
+                        .iter()
+                        .chain(c.iter())
+                        .chain(d.iter())
+                        .chain(e.iter())
+                        .chain(f_lo_lo.iter())
+                        .chain(f_lo_hi.iter())
+                        .chain(f_hi_lo.iter())
+                        .chain(f_hi_hi.iter())
+                        .chain(g.iter())
+                        .chain(a.iter())
+                        .copied()
+                        .collect::<Vec<_>>();
 
-                let xor_2 = e
-                    .iter()
-                    .chain(f_lo_lo.iter())
-                    .chain(f_lo_hi.iter())
-                    .chain(f_hi_lo.iter())
-                    .chain(f_hi_hi.iter())
-                    .chain(g.iter())
-                    .chain(a.iter())
-                    .chain(b.iter())
-                    .chain(c.iter())
-                    .chain(d.iter())
-                    .copied()
-                    .collect::<Vec<_>>();
+                    let xor_2 = e
+                        .iter()
+                        .chain(f_lo_lo.iter())
+                        .chain(f_lo_hi.iter())
+                        .chain(f_hi_lo.iter())
+                        .chain(f_hi_hi.iter())
+                        .chain(g.iter())
+                        .chain(a.iter())
+                        .chain(b.iter())
+                        .chain(c.iter())
+                        .chain(d.iter())
+                        .copied()
+                        .collect::<Vec<_>>();
 
-                let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
-                let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
-                let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
-                i2lebsp(xor_0 + xor_1 + xor_2)
-            })
+                    let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
+                    let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
+                    let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
+                    i2lebsp(xor_0 + xor_1 + xor_2)
+                },
+            )
     }
 
     fn xor_sigma_1(&self) -> Value<[bool; 128]> {
@@ -144,54 +146,56 @@ impl Subregion2Word {
             .zip(self.spread_f_hi_lo())
             .zip(self.spread_f_hi_hi())
             .zip(self.spread_g())
-            .map(|(((((((((a, b), c), d), e), f_lo_lo), f_lo_hi), f_hi_lo), f_hi_hi), g)| {
-                let xor_0 = c
-                    .iter()
-                    .chain(d.iter())
-                    .chain(e.iter())
-                    .chain(f_lo_lo.iter())
-                    .chain(f_lo_hi.iter())
-                    .chain(f_hi_lo.iter())
-                    .chain(f_hi_hi.iter())
-                    .chain(g.iter())
-                    .chain(std::iter::repeat(&false).take(2))
-                    .chain(std::iter::repeat(&false).take(10))
-                    .copied()
-                    .collect::<Vec<_>>();
+            .map(
+                |(((((((((a, b), c), d), e), f_lo_lo), f_lo_hi), f_hi_lo), f_hi_hi), g)| {
+                    let xor_0 = c
+                        .iter()
+                        .chain(d.iter())
+                        .chain(e.iter())
+                        .chain(f_lo_lo.iter())
+                        .chain(f_lo_hi.iter())
+                        .chain(f_hi_lo.iter())
+                        .chain(f_hi_hi.iter())
+                        .chain(g.iter())
+                        .chain(std::iter::repeat(&false).take(2))
+                        .chain(std::iter::repeat(&false).take(10))
+                        .copied()
+                        .collect::<Vec<_>>();
 
-                let xor_1 = f_lo_lo
-                    .iter()
-                    .chain(f_lo_hi.iter())
-                    .chain(f_hi_lo.iter())
-                    .chain(f_hi_hi.iter())
-                    .chain(g.iter())
-                    .chain(a.iter())
-                    .chain(b.iter())
-                    .chain(c.iter())
-                    .chain(d.iter())
-                    .chain(e.iter())
-                    .copied()
-                    .collect::<Vec<_>>();
+                    let xor_1 = f_lo_lo
+                        .iter()
+                        .chain(f_lo_hi.iter())
+                        .chain(f_hi_lo.iter())
+                        .chain(f_hi_hi.iter())
+                        .chain(g.iter())
+                        .chain(a.iter())
+                        .chain(b.iter())
+                        .chain(c.iter())
+                        .chain(d.iter())
+                        .chain(e.iter())
+                        .copied()
+                        .collect::<Vec<_>>();
 
-                let xor_2 = g
-                    .iter()
-                    .chain(a.iter())
-                    .chain(b.iter())
-                    .chain(c.iter())
-                    .chain(d.iter())
-                    .chain(e.iter())
-                    .chain(f_lo_lo.iter())
-                    .chain(f_lo_hi.iter())
-                    .chain(f_hi_lo.iter())
-                    .chain(f_hi_hi.iter())
-                    .copied()
-                    .collect::<Vec<_>>();
-                let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
-                let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
-                let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
-                
-                i2lebsp(xor_0 + xor_1 + xor_2)
-            })
+                    let xor_2 = g
+                        .iter()
+                        .chain(a.iter())
+                        .chain(b.iter())
+                        .chain(c.iter())
+                        .chain(d.iter())
+                        .chain(e.iter())
+                        .chain(f_lo_lo.iter())
+                        .chain(f_lo_hi.iter())
+                        .chain(f_hi_lo.iter())
+                        .chain(f_hi_hi.iter())
+                        .copied()
+                        .collect::<Vec<_>>();
+                    let xor_0 = lebs2ip::<128>(&xor_0.try_into().unwrap());
+                    let xor_1 = lebs2ip::<128>(&xor_1.try_into().unwrap());
+                    let xor_2 = lebs2ip::<128>(&xor_2.try_into().unwrap());
+
+                    i2lebsp(xor_0 + xor_1 + xor_2)
+                },
+            )
     }
 }
 
@@ -470,16 +474,20 @@ impl MessageScheduleConfig {
         word.spread_e.copy_advice(|| "spread_e", region, a_7, row)?;
 
         // Assign `f_lo_lo` and copy constraint
-        word.spread_f_lo_lo.copy_advice(|| "spread_f_lo_lo", region, a_7, row + 1)?;
+        word.spread_f_lo_lo
+            .copy_advice(|| "spread_f_lo_lo", region, a_7, row + 1)?;
 
         // Assign `f_lo_hi` and copy constraint
-        word.spread_f_lo_hi.copy_advice(|| "spread_f_lo_hi", region, a_7, row + 2)?;
+        word.spread_f_lo_hi
+            .copy_advice(|| "spread_f_lo_hi", region, a_7, row + 2)?;
 
         // Assign `f_hi_lo` and copy constraint
-        word.spread_f_hi_lo.copy_advice(|| "spread_f_hi_lo", region, a_4, row + 2)?;
+        word.spread_f_hi_lo
+            .copy_advice(|| "spread_f_hi_lo", region, a_4, row + 2)?;
 
         // Assign `f_hi_hi` and copy constraint
-        word.spread_f_hi_hi.copy_advice(|| "spread_f_hi_hi", region, a_4, row + 3)?;
+        word.spread_f_hi_hi
+            .copy_advice(|| "spread_f_hi_hi", region, a_4, row + 3)?;
 
         // Assign `g` and copy constraint
         word.g.copy_advice(|| "g", region, a_5, row + 1)?;

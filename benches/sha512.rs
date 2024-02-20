@@ -1,6 +1,8 @@
 use ark_std::{end_timer, start_timer};
-use halo2_proofs::circuit::{SimpleFloorPlanner, Layouter, Value};
-use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, verify_proof, Circuit, ConstraintSystem, Error};
+use halo2_proofs::circuit::{Layouter, SimpleFloorPlanner, Value};
+use halo2_proofs::plonk::{
+    create_proof, keygen_pk, keygen_vk, verify_proof, Circuit, ConstraintSystem, Error,
+};
 use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
 use halo2_proofs::poly::kzg::multiopen::{ProverSHPLONK, VerifierSHPLONK};
 use halo2_proofs::poly::kzg::strategy::SingleStrategy;
@@ -58,25 +60,56 @@ fn bench() {
             let table16_chip = Table16Chip::construct(config);
 
             // Test vector: "abc"
-            let test_input = 
-                [
-                    BlockWord(Value::known(0b0110000101100010011000111000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000000000)),
-                    BlockWord(Value::known(0b0000000000000000000000000000000000000000000000000000000000011000)),
-                ];
+            let test_input = [
+                BlockWord(Value::known(
+                    0b0110000101100010011000111000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000000000,
+                )),
+                BlockWord(Value::known(
+                    0b0000000000000000000000000000000000000000000000000000000000011000,
+                )),
+            ];
 
             // Create a message of length 31 blocks
             let mut input = Vec::with_capacity(31 * BLOCK_SIZE);
@@ -93,21 +126,20 @@ fn bench() {
     let proof_gen_prfx = PROOFGEN_PREFIX;
     let proof_ver_prfx = PROOFVER_PREFIX;
     let degree: u32 = var("DEGREE")
-    .unwrap_or_else(|_| "19".to_string())
-    .parse()
-    .expect("Cannot parse DEGREE env var as u32");
+        .unwrap_or_else(|_| "19".to_string())
+        .parse()
+        .expect("Cannot parse DEGREE env var as u32");
 
     //Unique string used by bench results module for parsing the result
     const BENCHMARK_ID: &str = "SHA512 Circuit";
 
     // Initialize the polynomial commitment parameters
     let mut rng = XorShiftRng::from_seed([
-        0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
-        0xbc, 0xe5,
+        0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
+        0xe5,
     ]);
     // Create the circuit
     let circuit: MyCircuit = MyCircuit {};
-
 
     // Bench setup generation
     let setup_message = format!("{} {} with degree = {}", BENCHMARK_ID, setup_prfx, degree);
@@ -161,5 +193,3 @@ fn bench() {
     .expect("failed to verify bench circuit");
     end_timer!(start3);
 }
-
- 

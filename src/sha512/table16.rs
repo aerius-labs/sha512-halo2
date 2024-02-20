@@ -25,32 +25,96 @@ const STATE: usize = 8;
 
 #[allow(clippy::unreadable_literal)]
 pub(crate) const ROUND_CONSTANTS: [u64; ROUNDS] = [
-            0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc, 0x3956c25bf348b538, 
-            0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118, 0xd807aa98a3030242, 0x12835b0145706fbe, 
-            0x243185be4ee4b28c, 0x550c7dc3d5ffb4e2, 0x72be5d74f27b896f, 0x80deb1fe3b1696b1, 0x9bdc06a725c71235, 
-            0xc19bf174cf692694, 0xe49b69c19ef14ad2, 0xefbe4786384f25e3, 0x0fc19dc68b8cd5b5, 0x240ca1cc77ac9c65, 
-            0x2de92c6f592b0275, 0x4a7484aa6ea6e483, 0x5cb0a9dcbd41fbd4, 0x76f988da831153b5, 0x983e5152ee66dfab, 
-            0xa831c66d2db43210, 0xb00327c898fb213f, 0xbf597fc7beef0ee4, 0xc6e00bf33da88fc2, 0xd5a79147930aa725, 
-            0x06ca6351e003826f, 0x142929670a0e6e70, 0x27b70a8546d22ffc, 0x2e1b21385c26c926, 0x4d2c6dfc5ac42aed, 
-            0x53380d139d95b3df, 0x650a73548baf63de, 0x766a0abb3c77b2a8, 0x81c2c92e47edaee6, 0x92722c851482353b, 
-            0xa2bfe8a14cf10364, 0xa81a664bbc423001, 0xc24b8b70d0f89791, 0xc76c51a30654be30, 0xd192e819d6ef5218, 
-            0xd69906245565a910, 0xf40e35855771202a, 0x106aa07032bbd1b8, 0x19a4c116b8d2d0c8, 0x1e376c085141ab53, 
-            0x2748774cdf8eeb99, 0x34b0bcb5e19b48a8, 0x391c0cb3c5c95a63, 0x4ed8aa4ae3418acb, 0x5b9cca4f7763e373, 
-            0x682e6ff3d6b2b8a3, 0x748f82ee5defb2fc, 0x78a5636f43172f60, 0x84c87814a1f0ab72, 0x8cc702081a6439ec, 
-            0x90befffa23631e28, 0xa4506cebde82bde9, 0xbef9a3f7b2c67915, 0xc67178f2e372532b, 0xca273eceea26619c, 
-            0xd186b8c721c0c207, 0xeada7dd6cde0eb1e, 0xf57d4f7fee6ed178, 0x06f067aa72176fba, 0x0a637dc5a2c898a6, 
-            0x113f9804bef90dae, 0x1b710b35131c471b, 0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc, 
-            0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817,
+    0x428a2f98d728ae22,
+    0x7137449123ef65cd,
+    0xb5c0fbcfec4d3b2f,
+    0xe9b5dba58189dbbc,
+    0x3956c25bf348b538,
+    0x59f111f1b605d019,
+    0x923f82a4af194f9b,
+    0xab1c5ed5da6d8118,
+    0xd807aa98a3030242,
+    0x12835b0145706fbe,
+    0x243185be4ee4b28c,
+    0x550c7dc3d5ffb4e2,
+    0x72be5d74f27b896f,
+    0x80deb1fe3b1696b1,
+    0x9bdc06a725c71235,
+    0xc19bf174cf692694,
+    0xe49b69c19ef14ad2,
+    0xefbe4786384f25e3,
+    0x0fc19dc68b8cd5b5,
+    0x240ca1cc77ac9c65,
+    0x2de92c6f592b0275,
+    0x4a7484aa6ea6e483,
+    0x5cb0a9dcbd41fbd4,
+    0x76f988da831153b5,
+    0x983e5152ee66dfab,
+    0xa831c66d2db43210,
+    0xb00327c898fb213f,
+    0xbf597fc7beef0ee4,
+    0xc6e00bf33da88fc2,
+    0xd5a79147930aa725,
+    0x06ca6351e003826f,
+    0x142929670a0e6e70,
+    0x27b70a8546d22ffc,
+    0x2e1b21385c26c926,
+    0x4d2c6dfc5ac42aed,
+    0x53380d139d95b3df,
+    0x650a73548baf63de,
+    0x766a0abb3c77b2a8,
+    0x81c2c92e47edaee6,
+    0x92722c851482353b,
+    0xa2bfe8a14cf10364,
+    0xa81a664bbc423001,
+    0xc24b8b70d0f89791,
+    0xc76c51a30654be30,
+    0xd192e819d6ef5218,
+    0xd69906245565a910,
+    0xf40e35855771202a,
+    0x106aa07032bbd1b8,
+    0x19a4c116b8d2d0c8,
+    0x1e376c085141ab53,
+    0x2748774cdf8eeb99,
+    0x34b0bcb5e19b48a8,
+    0x391c0cb3c5c95a63,
+    0x4ed8aa4ae3418acb,
+    0x5b9cca4f7763e373,
+    0x682e6ff3d6b2b8a3,
+    0x748f82ee5defb2fc,
+    0x78a5636f43172f60,
+    0x84c87814a1f0ab72,
+    0x8cc702081a6439ec,
+    0x90befffa23631e28,
+    0xa4506cebde82bde9,
+    0xbef9a3f7b2c67915,
+    0xc67178f2e372532b,
+    0xca273eceea26619c,
+    0xd186b8c721c0c207,
+    0xeada7dd6cde0eb1e,
+    0xf57d4f7fee6ed178,
+    0x06f067aa72176fba,
+    0x0a637dc5a2c898a6,
+    0x113f9804bef90dae,
+    0x1b710b35131c471b,
+    0x28db77f523047d84,
+    0x32caab7b40c72493,
+    0x3c9ebe0a15c9bebc,
+    0x431d67c49c100d4c,
+    0x4cc5d4becb3e42b6,
+    0x597f299cfc657e2a,
+    0x5fcb6fab3ad6faec,
+    0x6c44198c4a475817,
 ];
 
 pub const IV: [u64; STATE] = [
-    0x6a09e667f3bcc908, 
-    0xbb67ae8584caa73b, 
-    0x3c6ef372fe94f82b, 
-    0xa54ff53a5f1d36f1, 
-    0x510e527fade682d1, 
-    0x9b05688c2b3e6c1f, 
-    0x1f83d9abfb41bd6b, 
+    0x6a09e667f3bcc908,
+    0xbb67ae8584caa73b,
+    0x3c6ef372fe94f82b,
+    0xa54ff53a5f1d36f1,
+    0x510e527fade682d1,
+    0x9b05688c2b3e6c1f,
+    0x1f83d9abfb41bd6b,
     0x5be0cd19137e2179,
 ];
 
@@ -124,7 +188,7 @@ impl From<u64> for Bits<64> {
     fn from(int: u64) -> Bits<64> {
         Bits(i2lebsp::<64>(int.into()))
     }
-}    
+}
 
 #[derive(Clone, Debug)]
 pub struct AssignedBits<const LEN: usize>(AssignedCell<Bits<LEN>, bn256::Fr>);
@@ -271,8 +335,6 @@ impl AssignedBits<64> {
     }
 }
 
-
-
 /// Configuration for a [`Table16Chip`].
 #[derive(Clone, Debug)]
 pub struct Table16Config {
@@ -300,7 +362,6 @@ impl Chip<bn256::Fr> for Table16Chip {
     }
 }
 
-
 impl Table16Chip {
     /// Reconstructs this chip from the given config.
     pub fn construct(config: <Self as Chip<bn256::Fr>>::Config) -> Self {
@@ -311,9 +372,7 @@ impl Table16Chip {
     }
 
     /// Configures a circuit to include this chip.
-    pub fn configure(
-        meta: &mut ConstraintSystem<bn256::Fr>,
-    ) -> <Self as Chip<bn256::Fr>>::Config {
+    pub fn configure(meta: &mut ConstraintSystem<bn256::Fr>) -> <Self as Chip<bn256::Fr>>::Config {
         // Columns required by this chip:
         let message_schedule = meta.advice_column();
         let extras = [
@@ -419,15 +478,10 @@ impl Sha512Instructions<bn256::Fr> for Table16Chip {
     }
 }
 
-
 /// Common assignment patterns used by Table16 regions.
 trait Table16Assignment {
-    fn joindense(x :&SpreadVar<16,32>,y : &SpreadVar<16,32>) -> Value<[bool; 32]> {
-        x
-        .dense
-        .value()
-        .zip(y.dense.value())
-        .map(|(x, y)| {
+    fn joindense(x: &SpreadVar<16, 32>, y: &SpreadVar<16, 32>) -> Value<[bool; 32]> {
+        x.dense.value().zip(y.dense.value()).map(|(x, y)| {
             x.iter()
                 .chain(y.iter())
                 .copied()
@@ -436,13 +490,9 @@ trait Table16Assignment {
                 .unwrap()
         })
     }
-    
-    fn joinspread(x :&SpreadVar<16,32>,y : &SpreadVar<16,32>) -> Value<[bool; 64]> {
-        x
-        .spread
-        .value()
-        .zip(y.spread.value())
-        .map(|(x, y)| {
+
+    fn joinspread(x: &SpreadVar<16, 32>, y: &SpreadVar<16, 32>) -> Value<[bool; 64]> {
+        x.spread.value().zip(y.spread.value()).map(|(x, y)| {
             x.iter()
                 .chain(y.iter())
                 .copied()
@@ -471,11 +521,12 @@ trait Table16Assignment {
         ),
         Error,
     > {
+        // Lookup R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
+        let r_0_even_lo: Value<[bool; 16]> =
+            r_0_even.map(|r_0_even| r_0_even[..16].try_into().unwrap());
+        let r_0_even_hi: Value<[bool; 16]> =
+            r_0_even.map(|r_0_even| r_0_even[16..32].try_into().unwrap());
 
-         // Lookup R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
-        let r_0_even_lo: Value<[bool; 16]> = r_0_even.map(|r_0_even| r_0_even[..16].try_into().unwrap());
-        let r_0_even_hi: Value<[bool; 16]> = r_0_even.map(|r_0_even| r_0_even[16..32].try_into().unwrap());
-       
         let r_0_even_lo = SpreadVar::with_lookup(
             region,
             lookup,
@@ -489,12 +540,15 @@ trait Table16Assignment {
             r_0_even_hi.map(SpreadWord::<16, 32>::new),
         )?;
 
-        let r_0_even_dense = Self::joindense(&r_0_even_lo,&r_0_even_hi);
-        let r_0_even_d = AssignedBits::<32>::assign_bits(region, || "r_0_even_d", a_3, row + 2, r_0_even_dense)?;
+        let r_0_even_dense = Self::joindense(&r_0_even_lo, &r_0_even_hi);
+        let r_0_even_d =
+            AssignedBits::<32>::assign_bits(region, || "r_0_even_d", a_3, row + 2, r_0_even_dense)?;
 
-        let r_0_odd_lo: Value<[bool; 16]> = r_0_odd.map(|r_0_odd| r_0_odd[..16].try_into().unwrap());
-        let r_0_odd_hi: Value<[bool; 16]> = r_0_odd.map(|r_0_odd| r_0_odd[16..32].try_into().unwrap());
-       
+        let r_0_odd_lo: Value<[bool; 16]> =
+            r_0_odd.map(|r_0_odd| r_0_odd[..16].try_into().unwrap());
+        let r_0_odd_hi: Value<[bool; 16]> =
+            r_0_odd.map(|r_0_odd| r_0_odd[16..32].try_into().unwrap());
+
         let r_0_odd_lo = SpreadVar::with_lookup(
             region,
             lookup,
@@ -508,12 +562,15 @@ trait Table16Assignment {
             r_0_odd_hi.map(SpreadWord::<16, 32>::new),
         )?;
 
-        let r_0_odd_dense = Self::joindense(&r_0_odd_lo,&r_0_odd_hi);
-        let r_0_odd_d = AssignedBits::<32>::assign_bits(region, || "r_0_odd_d", a_3, row + 3, r_0_odd_dense)?;
+        let r_0_odd_dense = Self::joindense(&r_0_odd_lo, &r_0_odd_hi);
+        let r_0_odd_d =
+            AssignedBits::<32>::assign_bits(region, || "r_0_odd_d", a_3, row + 3, r_0_odd_dense)?;
 
-        let r_1_even_lo: Value<[bool; 16]> = r_1_even.map(|r_1_even| r_1_even[..16].try_into().unwrap());
-        let r_1_even_hi: Value<[bool; 16]> = r_1_even.map(|r_1_even| r_1_even[16..32].try_into().unwrap());
-       
+        let r_1_even_lo: Value<[bool; 16]> =
+            r_1_even.map(|r_1_even| r_1_even[..16].try_into().unwrap());
+        let r_1_even_hi: Value<[bool; 16]> =
+            r_1_even.map(|r_1_even| r_1_even[16..32].try_into().unwrap());
+
         let r_1_even_lo = SpreadVar::with_lookup(
             region,
             lookup,
@@ -527,12 +584,15 @@ trait Table16Assignment {
             r_1_even_hi.map(SpreadWord::<16, 32>::new),
         )?;
 
-        let r_1_even_dense = Self::joindense(&r_1_even_lo,&r_1_even_hi);
-        let r_1_even_d = AssignedBits::<32>::assign_bits(region, || "r_1_even_d", a_3, row + 4, r_1_even_dense)?;
+        let r_1_even_dense = Self::joindense(&r_1_even_lo, &r_1_even_hi);
+        let r_1_even_d =
+            AssignedBits::<32>::assign_bits(region, || "r_1_even_d", a_3, row + 4, r_1_even_dense)?;
 
-        let r_1_odd_lo: Value<[bool; 16]> = r_1_odd.map(|r_1_odd| r_1_odd[..16].try_into().unwrap());
-        let r_1_odd_hi: Value<[bool; 16]> = r_1_odd.map(|r_1_odd| r_1_odd[16..32].try_into().unwrap());
-       
+        let r_1_odd_lo: Value<[bool; 16]> =
+            r_1_odd.map(|r_1_odd| r_1_odd[..16].try_into().unwrap());
+        let r_1_odd_hi: Value<[bool; 16]> =
+            r_1_odd.map(|r_1_odd| r_1_odd[16..32].try_into().unwrap());
+
         let r_1_odd_lo = SpreadVar::with_lookup(
             region,
             lookup,
@@ -546,18 +606,15 @@ trait Table16Assignment {
             r_1_odd_hi.map(SpreadWord::<16, 32>::new),
         )?;
 
-        let r_1_odd_dense = Self::joindense(&r_1_odd_lo,&r_1_odd_hi);
-        let r_1_odd_d = AssignedBits::<32>::assign_bits(region, || "r_1_odd_d", a_3, row + 5, r_1_odd_dense)?;
+        let r_1_odd_dense = Self::joindense(&r_1_odd_lo, &r_1_odd_hi);
+        let r_1_odd_d =
+            AssignedBits::<32>::assign_bits(region, || "r_1_odd_d", a_3, row + 5, r_1_odd_dense)?;
 
-        let r_1_odd_spread = Self::joinspread(&r_1_odd_lo,&r_1_odd_hi);
-        let _r_1_odd_s = AssignedBits::<64>::assign_bits(region, || "r_1_odd_d", a_3, row + 6, r_1_odd_spread)?;
+        let r_1_odd_spread = Self::joinspread(&r_1_odd_lo, &r_1_odd_hi);
+        let _r_1_odd_s =
+            AssignedBits::<64>::assign_bits(region, || "r_1_odd_d", a_3, row + 6, r_1_odd_spread)?;
 
-
-
-        Ok((
-            (r_0_even_d, r_1_even_d),
-            (r_0_odd_d, r_1_odd_d),
-        ))
+        Ok(((r_0_even_d, r_1_even_d), (r_0_odd_d, r_1_odd_d)))
     }
 
     /// Assign outputs of sigma gates
@@ -588,8 +645,8 @@ mod tests {
     use super::{message_schedule::msg_schedule_test_input, Table16Chip, Table16Config};
     use halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
-        halo2curves::bn256,
         dev::MockProver,
+        halo2curves::bn256,
         plonk::{Circuit, ConstraintSystem, Error},
     };
 
@@ -644,4 +701,4 @@ mod tests {
             .render::<bn256::Fr, _, _>(19, &circuit, &root)
             .unwrap();
     }
-}    
+}

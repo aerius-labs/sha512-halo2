@@ -179,7 +179,7 @@ impl MessageScheduleConfig {
 
         // Assign `d_hi_hi` (14-bit piece) lookup
         let spread_d_hi_hi = pieces[6].clone().map(SpreadWord::try_new);
-        let spread_d_hi_hi = SpreadVar::with_lookup(region, &self.lookup, row + 3 , spread_d_hi_hi)?;
+        let spread_d_hi_hi = SpreadVar::with_lookup(region, &self.lookup, row + 3, spread_d_hi_hi)?;
 
         Ok(Subregion1Word {
             index,
@@ -241,16 +241,20 @@ impl MessageScheduleConfig {
         word.c.copy_advice(|| "c", region, a_4, row)?;
 
         // Assign `spread_d_lo_lo` and copy constraint
-        word.spread_d_lo_lo.copy_advice(|| "spread_d_lo_lo", region, a_5, row + 1)?;
+        word.spread_d_lo_lo
+            .copy_advice(|| "spread_d_lo_lo", region, a_5, row + 1)?;
 
         // Assign `spread_d_lo_hi` and copy constraint
-        word.spread_d_lo_hi.copy_advice(|| "spread_d_lo_hi", region, a_5, row)?;
+        word.spread_d_lo_hi
+            .copy_advice(|| "spread_d_lo_hi", region, a_5, row)?;
 
         // Assign `spread_d_hi_lo` and copy constraint
-        word.spread_d_hi_lo.copy_advice(|| "spread_d_hi_lo", region, a_4, row + 1)?;
+        word.spread_d_hi_lo
+            .copy_advice(|| "spread_d_hi_lo", region, a_4, row + 1)?;
 
         // Assign `spread_d_hi_hi` and copy constraint
-        word.spread_d_hi_hi.copy_advice(|| "spread_d_hi_hi", region, a_3, row + 1)?;
+        word.spread_d_hi_hi
+            .copy_advice(|| "spread_d_hi_hi", region, a_3, row + 1)?;
 
         // Calculate R_0^{even}, R_0^{odd}, R_1^{even}, R_1^{odd}
         let r = word.xor_lower_sigma_0();

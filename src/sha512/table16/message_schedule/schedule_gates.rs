@@ -65,8 +65,14 @@ impl<F: FieldExt> ScheduleGate<F> {
         tag_d_hi_hi: Expression<F>,
         word: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
-        let decompose_check =
-            a + b * F::from(1 << 1) + c * F::from(1 << 7) + d_lo_lo * F::from(1 << 8) + d_lo_hi * F::from(1 << 22) + d_hi_lo * F::from(1 << 36) + d_hi_hi * F::from(1 << 50) + word * (-F::one());
+        let decompose_check = a
+            + b * F::from(1 << 1)
+            + c * F::from(1 << 7)
+            + d_lo_lo * F::from(1 << 8)
+            + d_lo_hi * F::from(1 << 22)
+            + d_hi_lo * F::from(1 << 36)
+            + d_hi_hi * F::from(1 << 50)
+            + word * (-F::one());
         let range_check_tag_d_lo_lo = Gate::range_check(tag_d_lo_lo, 0, 3);
         let range_check_tag_d_lo_hi = Gate::range_check(tag_d_lo_hi, 0, 3);
         let range_check_tag_d_hi_lo = Gate::range_check(tag_d_hi_lo, 0, 3);
@@ -180,8 +186,8 @@ impl<F: FieldExt> ScheduleGate<F> {
         .map(move |(name, poly)| (name, s_decompose_3.clone() * poly))
     }
 
-     /// b_lo + 2^3 * b_hi = b, on W_[1..49]
-     fn check_b(b: Expression<F>, b_lo: Expression<F>, b_hi: Expression<F>) -> Expression<F> {
+    /// b_lo + 2^3 * b_hi = b, on W_[1..49]
+    fn check_b(b: Expression<F>, b_lo: Expression<F>, b_hi: Expression<F>) -> Expression<F> {
         let expected_b = b_lo + b_hi * F::from(1 << 3);
         expected_b - b
     }
@@ -212,16 +218,16 @@ impl<F: FieldExt> ScheduleGate<F> {
         spread_d_hi_hi: Expression<F>,
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
         let check_spread_and_range =
-            Gate::three_bit_spread_and_range(b_lo.clone(), spread_b_lo.clone())
-                .chain(Gate::three_bit_spread_and_range(
-                    b_hi.clone(),
-                    spread_b_hi.clone(),
-                ));
-               
+            Gate::three_bit_spread_and_range(b_lo.clone(), spread_b_lo.clone()).chain(
+                Gate::three_bit_spread_and_range(b_hi.clone(), spread_b_hi.clone()),
+            );
+
         let check_b = Self::check_b(b, b_lo, b_hi);
         let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
             + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
-            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32))
+                + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2))
+                * F::from_u128(1 << 64);
         let xor_0 = spread_c.clone()
             + spread_d_lo_lo.clone() * F::from(1 << 2)
             + spread_d_lo_hi.clone() * F::from(1 << 30)
@@ -279,11 +285,17 @@ impl<F: FieldExt> ScheduleGate<F> {
     ) -> impl Iterator<Item = (&'static str, Expression<F>)> {
         let check_spread_and_range =
             Gate::three_bit_spread_and_range(a_lo.clone(), spread_a_lo.clone())
-                .chain(Gate::three_bit_spread_and_range(a_hi.clone(), spread_a_hi.clone(),))
-                .chain(Gate::three_bit_spread_and_range(d.clone(), spread_d.clone()));
+                .chain(Gate::three_bit_spread_and_range(
+                    a_hi.clone(),
+                    spread_a_hi.clone(),
+                ))
+                .chain(Gate::three_bit_spread_and_range(
+                    d.clone(),
+                    spread_d.clone(),
+                ));
         // a_lo + 2^3 * a_hi = a, on W_[49..77]
         let check_a1 = Self::check_b(a, a_lo, a_hi);
-        
+
         // let check_a1 = {
         //     let expected_a = a_lo + a_hi * F::from(1 << 3);
         //     expected_a - a
@@ -291,7 +303,9 @@ impl<F: FieldExt> ScheduleGate<F> {
 
         let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
             + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
-            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32))
+                + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2))
+                * F::from_u128(1 << 64);
         let xor_0 = spread_b.clone()
             + spread_c_lo_lo.clone() * F::from(1 << 26)
             + spread_c_lo_hi.clone() * F::from(1 << 48)
@@ -362,7 +376,9 @@ impl<F: FieldExt> ScheduleGate<F> {
         let check_b = Self::check_b(b, b_lo, b_hi);
         let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
             + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
-            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32))
+                + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2))
+                * F::from_u128(1 << 64);
         let xor_0 = spread_d.clone()
             + spread_e.clone() * F::from(1 << 2)
             + spread_f_lo_lo.clone() * F::from(1 << 24)
@@ -440,7 +456,9 @@ impl<F: FieldExt> ScheduleGate<F> {
         let check_b = Self::check_b(b, b_lo, b_hi);
         let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
             + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
-            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32))
+                + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2))
+                * F::from_u128(1 << 64);
         let xor_0 = spread_c.clone()
             + spread_d.clone() * F::from(1 << 2)
             + spread_e.clone() * F::from(1 << 4)

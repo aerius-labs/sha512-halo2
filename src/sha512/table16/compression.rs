@@ -85,8 +85,8 @@ pub trait UpperSigmaVar<
 pub struct AbcdVar {
     a_lo: SpreadVar<14, 28>,
     a_hi: SpreadVar<14, 28>,
-    b_lo: SpreadVar<3,6>,
-    b_hi: SpreadVar<3,6>,
+    b_lo: SpreadVar<3, 6>,
+    b_hi: SpreadVar<3, 6>,
     c_lo: SpreadVar<2, 4>,
     c_hi: SpreadVar<3, 6>,
     d_lo: SpreadVar<14, 28>,
@@ -139,65 +139,65 @@ impl AbcdVar {
     }
 }
 
-impl UpperSigmaVar<56,12,10,50> for AbcdVar {
+impl UpperSigmaVar<56, 12, 10, 50> for AbcdVar {
     fn spread_a(&self) -> Value<[bool; 56]> {
         self.a_lo
-        .spread
-        .value()
-        .zip(self.a_hi.spread.value())
-        .map(|(a_lo, a_hi)| {
-            a_lo.iter()
-                .chain(a_hi.iter())
-                .copied()
-                .collect::<Vec<_>>()
-                .try_into()
-                .unwrap()
-        })
+            .spread
+            .value()
+            .zip(self.a_hi.spread.value())
+            .map(|(a_lo, a_hi)| {
+                a_lo.iter()
+                    .chain(a_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
+            })
     }
 
     fn spread_b(&self) -> Value<[bool; 12]> {
         self.b_lo
-        .spread
-        .value()
-        .zip(self.b_hi.spread.value())
-        .map(|(b_lo, b_hi)| {
-            b_lo.iter()
-                .chain(b_hi.iter())
-                .copied()
-                .collect::<Vec<_>>()
-                .try_into()
-                .unwrap()
-        })
+            .spread
+            .value()
+            .zip(self.b_hi.spread.value())
+            .map(|(b_lo, b_hi)| {
+                b_lo.iter()
+                    .chain(b_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
+            })
     }
 
     fn spread_c(&self) -> Value<[bool; 10]> {
         self.c_lo
-        .spread
-        .value()
-        .zip(self.c_hi.spread.value())
-        .map(|(c_lo, c_hi)| {
-            c_lo.iter()
-                .chain(c_hi.iter())
-                .copied()
-                .collect::<Vec<_>>()
-                .try_into()
-                .unwrap()
-        })
+            .spread
+            .value()
+            .zip(self.c_hi.spread.value())
+            .map(|(c_lo, c_hi)| {
+                c_lo.iter()
+                    .chain(c_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
+            })
     }
 
     fn spread_d(&self) -> Value<[bool; 50]> {
         self.d_lo
-        .spread
-        .value()
-        .zip(self.d_hi.spread.value())
-        .map(|(d_lo, d_hi)| {
-            d_lo.iter()
-                .chain(d_hi.iter())
-                .copied()
-                .collect::<Vec<_>>()
-                .try_into()
-                .unwrap()
-        })
+            .spread
+            .value()
+            .zip(self.d_hi.spread.value())
+            .map(|(d_lo, d_hi)| {
+                d_lo.iter()
+                    .chain(d_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
+            })
     }
 }
 
@@ -349,7 +349,6 @@ impl RoundWordSpread {
     }
 }
 
-
 #[derive(Clone, Debug)]
 pub struct RoundWordA {
     pieces: Option<AbcdVar>,
@@ -407,7 +406,6 @@ impl RoundWordE {
         }
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct RoundWord {
@@ -488,7 +486,6 @@ pub enum StateWord {
     H(RoundWordDense),
 }
 
-
 #[derive(Clone, Debug)]
 pub(super) struct CompressionConfig {
     lookup: SpreadInputs,
@@ -564,7 +561,7 @@ impl CompressionConfig {
             let b_lo = meta.query_advice(a_3, Rotation::cur()); // 3-bit chunk
             let spread_b_lo = meta.query_advice(a_4, Rotation::cur());
             let b_hi = meta.query_advice(a_3, Rotation::next()); //3-bit chunk
-            let spread_b_hi = meta.query_advice(a_4,Rotation::next());
+            let spread_b_hi = meta.query_advice(a_4, Rotation::next());
             let c_lo = meta.query_advice(a_3, Rotation(2)); // 2-bit chunk
             let spread_c_lo = meta.query_advice(a_4, Rotation(2));
             // let c_mid = meta.query_advice(a_5, Rotation::cur()); // 3-bit chunk
@@ -616,7 +613,7 @@ impl CompressionConfig {
             let s_decompose_efgh = meta.query_selector(s_decompose_efgh);
             let a = meta.query_advice(a_1, Rotation::cur()); // 14-bit chunk
             let spread_a = meta.query_advice(a_2, Rotation::cur());
-            let tag_a = meta.query_advice(a_0,Rotation::cur());
+            let tag_a = meta.query_advice(a_0, Rotation::cur());
             // let a_hi = meta.query_advice(a_5, Rotation::next()); // 3-bit chunk
             // let spread_a_hi = meta.query_advice(a_6, Rotation::next());
             let b_lo = meta.query_advice(a_3, Rotation::cur()); // 2-bit chunk
@@ -674,12 +671,12 @@ impl CompressionConfig {
             let s_upper_sigma_0 = meta.query_selector(s_upper_sigma_0);
             let spread_r0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
             let spread_r0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
-            let spread_r0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_r0_odd_lo = meta.query_advice(a_2, Rotation::next()); // spread_r0_odd_lo
             let spread_r0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
             let spread_r1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
             let spread_r1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
-            let spread_r1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
-            let spread_r1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
+            let spread_r1_odd_lo = meta.query_advice(a_2, Rotation(5)); // spread_r1_odd_lo
+            let spread_r1_odd_hi = meta.query_advice(a_2, Rotation(6)); // spread_r1_odd_hi
 
             let spread_a_lo = meta.query_advice(a_3, Rotation::next());
             let spread_a_hi = meta.query_advice(a_4, Rotation::prev());
@@ -718,12 +715,12 @@ impl CompressionConfig {
             let s_upper_sigma_1 = meta.query_selector(s_upper_sigma_1);
             let spread_r0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
             let spread_r0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
-            let spread_r0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_r0_odd_lo = meta.query_advice(a_2, Rotation::next()); // spread_r0_odd_lo
             let spread_r0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
             let spread_r1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
             let spread_r1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
-            let spread_r1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
-            let spread_r1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
+            let spread_r1_odd_lo = meta.query_advice(a_2, Rotation(5)); // spread_r1_odd_lo
+            let spread_r1_odd_hi = meta.query_advice(a_2, Rotation(6)); // spread_r1_odd_hi
 
             let spread_a = meta.query_advice(a_3, Rotation::next());
             // let spread_a_hi = meta.query_advice(a_4, Rotation::next());
@@ -760,12 +757,12 @@ impl CompressionConfig {
             let s_ch = meta.query_selector(s_ch);
             let spread_p0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
             let spread_p0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
-            let spread_p0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_p0_odd_lo = meta.query_advice(a_2, Rotation::next()); // spread_r0_odd_lo
             let spread_p0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
             let spread_p1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
             let spread_p1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
-            let spread_p1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
-            let spread_p1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
+            let spread_p1_odd_lo = meta.query_advice(a_2, Rotation(5)); // spread_r1_odd_lo
+            let spread_p1_odd_hi = meta.query_advice(a_2, Rotation(6)); // spread_r1_odd_hi
 
             let spread_e_lo = meta.query_advice(a_3, Rotation::prev());
             let spread_e_hi = meta.query_advice(a_4, Rotation::prev());
@@ -795,12 +792,12 @@ impl CompressionConfig {
             let s_ch_neg = meta.query_selector(s_ch_neg);
             let spread_q0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
             let spread_q0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
-            let spread_q0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_q0_odd_lo = meta.query_advice(a_2, Rotation::next()); // spread_r0_odd_lo
             let spread_q0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
             let spread_q1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
             let spread_q1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
-            let spread_q1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
-            let spread_q1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
+            let spread_q1_odd_lo = meta.query_advice(a_2, Rotation(5)); // spread_r1_odd_lo
+            let spread_q1_odd_hi = meta.query_advice(a_2, Rotation(6)); // spread_r1_odd_hi
             let spread_e_lo = meta.query_advice(a_5, Rotation::prev());
             let spread_e_hi = meta.query_advice(a_5, Rotation::cur());
             let spread_e_neg_lo = meta.query_advice(a_3, Rotation::prev());
@@ -832,12 +829,12 @@ impl CompressionConfig {
             let s_maj = meta.query_selector(s_maj);
             let spread_q0_even_lo = meta.query_advice(a_2, Rotation::prev()); // spread_r0_even_lo
             let spread_q0_even_hi = meta.query_advice(a_2, Rotation::cur()); // spread_r0_even_hi
-            let spread_q0_odd_lo = meta.query_advice(a_2, Rotation::next());  // spread_r0_odd_lo
+            let spread_q0_odd_lo = meta.query_advice(a_2, Rotation::next()); // spread_r0_odd_lo
             let spread_q0_odd_hi = meta.query_advice(a_2, Rotation(2)); // spread_r0_odd_hi
             let spread_q1_even_lo = meta.query_advice(a_2, Rotation(3)); // spread_r1_even_lo
             let spread_q1_even_hi = meta.query_advice(a_2, Rotation(4)); // spread_r1_even_hi
-            let spread_q1_odd_lo = meta.query_advice(a_2, Rotation(5));  // spread_r1_odd_lo
-            let spread_q1_odd_hi = meta.query_advice(a_2, Rotation(6));  // spread_r1_odd_hi
+            let spread_q1_odd_lo = meta.query_advice(a_2, Rotation(5)); // spread_r1_odd_lo
+            let spread_q1_odd_hi = meta.query_advice(a_2, Rotation(6)); // spread_r1_odd_hi
             let spread_a_lo = meta.query_advice(a_4, Rotation::prev());
             let spread_a_hi = meta.query_advice(a_5, Rotation::prev());
             let spread_b_lo = meta.query_advice(a_4, Rotation::cur());
@@ -1061,7 +1058,7 @@ impl CompressionConfig {
             || "digest",
             |mut region| {
                 digest = self.assign_digest(&mut region, state.clone())?;
-                
+
                 Ok(())
             },
         )?;
@@ -1073,12 +1070,12 @@ mod tests {
     use super::super::{
         super::BLOCK_SIZE, msg_schedule_test_input, BlockWord, Table16Chip, Table16Config, IV,
     };
+    use halo2_proofs::halo2curves::bn256;
     use halo2_proofs::{
         circuit::{Layouter, SimpleFloorPlanner},
         dev::MockProver,
         plonk::{Circuit, ConstraintSystem, Error},
     };
-    use halo2_proofs::halo2curves::bn256;
 
     #[test]
     fn compress() {
@@ -1116,10 +1113,10 @@ mod tests {
                     .compress(&mut layouter, initial_state, w_halves)?;
 
                 let digest = config.compression.digest(&mut layouter, state)?;
-                println!("{:?}",digest);
+                println!("{:?}", digest);
                 for (idx, digest_word) in digest.iter().enumerate() {
                     digest_word.0.assert_if_known(|digest_word| {
-                        println!("{:?},  {:?}",*digest_word,IV[idx]);
+                        println!("{:?},  {:?}", *digest_word, IV[idx]);
                         (*digest_word as u128 + IV[idx] as u128) as u64
                             == super::compression_util::COMPRESSION_OUTPUT[idx]
                     });

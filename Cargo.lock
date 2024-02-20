@@ -1170,6 +1170,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "round"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b02705db4fa872ae37e464fc803b7ffa574e6c4a5e112c52a82550f9dd63b657"
+
+[[package]]
 name = "rustc_version"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1309,6 +1315,7 @@ dependencies = [
  "rand",
  "rand_chacha",
  "rand_xorshift",
+ "round",
  "sha2",
  "subtle",
  "tabbycat",

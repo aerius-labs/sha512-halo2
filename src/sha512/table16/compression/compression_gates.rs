@@ -1,10 +1,8 @@
 use super::super::{util::*, Gate};
 
-use halo2_proofs::plonk::{
-    Constraint, Constraints, Expression
-};
-use std::marker::PhantomData;
 use halo2_proofs::arithmetic::FieldExt;
+use halo2_proofs::plonk::{Constraint, Constraints, Expression};
+use std::marker::PhantomData;
 
 pub struct CompressionGate<F: FieldExt>(PhantomData<F>);
 
@@ -57,7 +55,10 @@ impl<F: FieldExt> CompressionGate<F> {
                     c_hi.clone(),
                     spread_c_hi.clone(),
                 ))
-                .chain(Gate::two_bit_spread_and_range(c_lo.clone(), spread_c_lo.clone()));
+                .chain(Gate::two_bit_spread_and_range(
+                    c_lo.clone(),
+                    spread_c_lo.clone(),
+                ));
         let range_check_tag_a_lo = Gate::range_check(tag_a_lo, 0, 3);
         let range_check_tag_a_hi = Gate::range_check(tag_a_hi, 0, 3);
         let range_check_tag_d_lo = Gate::range_check(tag_d_lo, 0, 3);
@@ -129,15 +130,10 @@ impl<F: FieldExt> CompressionGate<F> {
         impl Iterator<Item = (&'static str, Expression<F>)>,
     > {
         let check_spread_and_range =
-            Gate::two_bit_spread_and_range(
-                    b_lo.clone(),
-                    spread_b_lo.clone(),
-                )
-                .chain(Gate::two_bit_spread_and_range(
-                    b_hi.clone(),
-                    spread_b_hi.clone(),
-                ));
-        let range_check_tag_a = Gate::range_check(tag_a, 0, 3);        
+            Gate::two_bit_spread_and_range(b_lo.clone(), spread_b_lo.clone()).chain(
+                Gate::two_bit_spread_and_range(b_hi.clone(), spread_b_hi.clone()),
+            );
+        let range_check_tag_a = Gate::range_check(tag_a, 0, 3);
         let range_check_tag_c_lo = Gate::range_check(tag_c_lo, 0, 2);
         let range_check_tag_c_hi = Gate::range_check(tag_c_hi, 0, 0);
         let range_check_tag_d_lo = Gate::range_check(tag_d_lo, 0, 2);
@@ -198,7 +194,9 @@ impl<F: FieldExt> CompressionGate<F> {
     ) -> Option<(&'static str, Expression<F>)> {
         let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
             + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
-            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32))
+                + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2))
+                * F::from_u128(1 << 64);
         let xor_0 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 6)
             + spread_c_lo.clone() * F::from(1 << 12)
@@ -252,7 +250,9 @@ impl<F: FieldExt> CompressionGate<F> {
     ) -> Option<(&'static str, Expression<F>)> {
         let spread_witness = (spread_r0_even_lo + spread_r0_even_hi * F::from(1 << 32))
             + (spread_r0_odd_lo + spread_r0_odd_hi * F::from(1 << 32)) * F::from(2)
-            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32)) + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2)) * F::from_u128(1 << 64);
+            + ((spread_r1_even_lo + spread_r1_even_hi * F::from(1 << 32))
+                + (spread_r1_odd_lo + spread_r1_odd_hi * F::from(1 << 32)) * F::from(2))
+                * F::from_u128(1 << 64);
 
         let xor_0 = spread_b_lo.clone()
             + spread_b_hi.clone() * F::from(1 << 4)
@@ -302,11 +302,11 @@ impl<F: FieldExt> CompressionGate<F> {
         let lhs_hi = spread_e_hi + spread_f_hi;
         let lhs = lhs_lo + lhs_hi * F::from_u128(1 << 64);
 
-        let spread_p0_even = spread_p0_even_lo + spread_p0_even_hi * F::from(1<<32);
-        let spread_p1_even = spread_p1_even_lo + spread_p1_even_hi * F::from(1<<32);
+        let spread_p0_even = spread_p0_even_lo + spread_p0_even_hi * F::from(1 << 32);
+        let spread_p1_even = spread_p1_even_lo + spread_p1_even_hi * F::from(1 << 32);
         let rhs_even = spread_p0_even + spread_p1_even * F::from_u128(1 << 64);
-        let spread_p0_odd = spread_p0_odd_lo + spread_p0_odd_hi * F::from(1<<32);
-        let spread_p1_odd = spread_p1_odd_lo + spread_p1_odd_hi * F::from(1<<32);
+        let spread_p0_odd = spread_p0_odd_lo + spread_p0_odd_hi * F::from(1 << 32);
+        let spread_p1_odd = spread_p1_odd_lo + spread_p1_odd_hi * F::from(1 << 32);
         let rhs_odd = spread_p0_odd + spread_p1_odd * F::from_u128(1 << 64);
         let rhs = rhs_even + rhs_odd * F::from(2);
 
@@ -353,11 +353,11 @@ impl<F: FieldExt> CompressionGate<F> {
         let lhs_lo = spread_e_neg_lo + spread_g_lo;
         let lhs_hi = spread_e_neg_hi + spread_g_hi;
         let lhs = lhs_lo + lhs_hi * F::from_u128(1 << 64);
-        let spread_q0_even = spread_q0_even_lo + spread_q0_even_hi * F::from(1<<32);
-        let spread_q1_even = spread_q1_even_lo + spread_q1_even_hi * F::from(1<<32);
+        let spread_q0_even = spread_q0_even_lo + spread_q0_even_hi * F::from(1 << 32);
+        let spread_q1_even = spread_q1_even_lo + spread_q1_even_hi * F::from(1 << 32);
         let rhs_even = spread_q0_even + spread_q1_even * F::from_u128(1 << 64);
-        let spread_q0_odd = spread_q0_odd_lo + spread_q0_odd_hi * F::from(1<<32);
-        let spread_q1_odd = spread_q1_odd_lo + spread_q1_odd_hi * F::from(1<<32);
+        let spread_q0_odd = spread_q0_odd_lo + spread_q0_odd_hi * F::from(1 << 32);
+        let spread_q1_odd = spread_q1_odd_lo + spread_q1_odd_hi * F::from(1 << 32);
         let rhs_odd = spread_q0_odd + spread_q1_odd * F::from_u128(1 << 64);
         let rhs = rhs_even + rhs_odd * F::from(2);
 
@@ -383,11 +383,11 @@ impl<F: FieldExt> CompressionGate<F> {
         spread_c_lo: Expression<F>,
         spread_c_hi: Expression<F>,
     ) -> Option<(&'static str, Expression<F>)> {
-        let spread_m0_even = spread_m0_even_lo + spread_m0_even_hi * F::from(1<<32);
-        let spread_m1_even = spread_m1_even_lo + spread_m1_even_hi * F::from(1<<32);
+        let spread_m0_even = spread_m0_even_lo + spread_m0_even_hi * F::from(1 << 32);
+        let spread_m1_even = spread_m1_even_lo + spread_m1_even_hi * F::from(1 << 32);
         let maj_even = spread_m0_even + spread_m1_even * F::from_u128(1 << 64);
-        let spread_m0_odd = spread_m0_odd_lo + spread_m0_odd_hi * F::from(1<<32);
-        let spread_m1_odd = spread_m1_odd_lo + spread_m1_odd_hi * F::from(1<<32);
+        let spread_m0_odd = spread_m0_odd_lo + spread_m0_odd_hi * F::from(1 << 32);
+        let spread_m1_odd = spread_m1_odd_lo + spread_m1_odd_hi * F::from(1 << 32);
         let maj_odd = spread_m0_odd + spread_m1_odd * F::from_u128(1 << 64);
         let maj = maj_even + maj_odd * F::from(2);
 

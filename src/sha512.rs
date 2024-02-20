@@ -10,7 +10,7 @@ use halo2_proofs::{
 
 mod table16;
 
-pub use table16::{BlockWord, Table16Chip, Table16Config,IV};
+pub use table16::{BlockWord, Table16Chip, Table16Config, IV};
 
 /// The size of a SHA-512 block, in 64-bit words.
 pub const BLOCK_SIZE: usize = 16;

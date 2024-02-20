@@ -189,7 +189,7 @@ impl<F: FieldExt> SpreadTableChip<F> {
         let table_spread = meta.lookup_table_column();
 
         //TODO: Add proper name for lookup
-        meta.lookup("",|meta| {
+        meta.lookup("", |meta| {
             let tag_cur = meta.query_advice(input_tag, Rotation::cur());
             let dense_cur = meta.query_advice(input_dense, Rotation::cur());
             let spread_cur = meta.query_advice(input_spread, Rotation::cur());
@@ -258,31 +258,34 @@ impl<F: FieldExt> SpreadTableChip<F> {
 
 impl SpreadTableConfig {
     fn generate<F: FieldExt>() -> impl Iterator<Item = (F, F, F)> {
-        (1..=(1 << 16)).scan((F::zero(), F::zero(), F::zero()), |(tag, dense, spread), i| {
-            // We computed this table row in the previous iteration.
-            let res = (*tag, *dense, *spread);
+        (1..=(1 << 16)).scan(
+            (F::zero(), F::zero(), F::zero()),
+            |(tag, dense, spread), i| {
+                // We computed this table row in the previous iteration.
+                let res = (*tag, *dense, *spread);
 
-            // i holds the zero-indexed row number for the next table row.
-            match i {
-                BITS_10 | BITS_11 | BITS_13 | BITS_14  => *tag += F::one(),
-                _ => (),
-            }
-            *dense += F::one();
-            if i & 1 == 0 {
-                // On even-numbered rows we recompute the spread.
-                *spread = F::zero();
-                for b in 0..16 {
-                    if (i >> b) & 1 != 0 {
-                        *spread += F::from(1 << (2 * b));
-                    }
+                // i holds the zero-indexed row number for the next table row.
+                match i {
+                    BITS_10 | BITS_11 | BITS_13 | BITS_14 => *tag += F::one(),
+                    _ => (),
                 }
-            } else {
-                // On odd-numbered rows we add one.
-                *spread += F::one();
-            }
+                *dense += F::one();
+                if i & 1 == 0 {
+                    // On even-numbered rows we recompute the spread.
+                    *spread = F::zero();
+                    for b in 0..16 {
+                        if (i >> b) & 1 != 0 {
+                            *spread += F::from(1 << (2 * b));
+                        }
+                    }
+                } else {
+                    // On odd-numbered rows we add one.
+                    *spread += F::one();
+                }
 
-            Some(res)
-        })
+                Some(res)
+            },
+        )
     }
 }
 
@@ -291,13 +294,13 @@ mod tests {
     use super::{get_tag, SpreadTableChip, SpreadTableConfig};
     use rand::Rng;
 
+    use halo2_proofs::halo2curves::bn256;
     use halo2_proofs::{
         arithmetic::FieldExt,
         circuit::{Layouter, SimpleFloorPlanner, Value},
         dev::MockProver,
         plonk::{Advice, Circuit, Column, ConstraintSystem, Error},
     };
-    use halo2_proofs::halo2curves::bn256;
 
     #[test]
     fn lookup_table() {
@@ -369,24 +372,24 @@ mod tests {
                         // 10-bit
                         add_row(
                             F::zero(),
-                            F::from(0b1111111111), 
-                            F::from(0b01010101010101010101)
+                            F::from(0b1111111111),
+                            F::from(0b01010101010101010101),
                         )?;
                         add_row(
                             F::one(),
-                            F::from(0b10000000000), 
-                            F::from(0b0100000000000000000000)
+                            F::from(0b10000000000),
+                            F::from(0b0100000000000000000000),
                         )?;
                         // 11-bit
                         add_row(
                             F::one(),
-                            F::from(0b11111111111), 
-                            F::from(0b0101010101010101010101)
+                            F::from(0b11111111111),
+                            F::from(0b0101010101010101010101),
                         )?;
                         add_row(
-                            F::from(2), 
-                            F::from(0b100000000000), 
-                            F::from(0b010000000000000000000000)
+                            F::from(2),
+                            F::from(0b100000000000),
+                            F::from(0b010000000000000000000000),
                         )?;
                         // - 13-bit
                         add_row(

@@ -1,7 +1,6 @@
-
 use halo2_proofs::circuit::Value;
 
-pub const MASK_EVEN_64: u64= 0x5555555555555555;
+pub const MASK_EVEN_64: u64 = 0x5555555555555555;
 
 /// The sequence of bits representing a u64 in little-endian order.
 ///
@@ -102,8 +101,14 @@ pub fn odd_bits<const LEN: usize, const HALF: usize>(bits: [bool; LEN]) -> [bool
 /// Given a vector of words as vec![(lo: u32, hi: u32)], returns their sum: u64, along
 /// with a carry bit.
 pub fn sum_with_carry(words: Vec<(Value<u32>, Value<u32>)>) -> (Value<u64>, Value<u64>) {
-    let words_lo: Value<Vec<u128>> = words.iter().map(|(lo, _)| lo.map(|lo| lo as u128)).collect();
-    let words_hi: Value<Vec<u128>> = words.iter().map(|(_, hi)| hi.map(|hi| hi as u128)).collect();
+    let words_lo: Value<Vec<u128>> = words
+        .iter()
+        .map(|(lo, _)| lo.map(|lo| lo as u128))
+        .collect();
+    let words_hi: Value<Vec<u128>> = words
+        .iter()
+        .map(|(_, hi)| hi.map(|hi| hi as u128))
+        .collect();
 
     let sum: Value<u128> = {
         let sum_lo: Value<u128> = words_lo.map(|vec| vec.iter().sum());

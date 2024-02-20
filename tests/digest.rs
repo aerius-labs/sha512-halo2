@@ -1,59 +1,32 @@
-use hex_literal::hex;
-use sha2::{Sha512, Digest, digest::{generic_array::GenericArray, typenum::{U64, U8, U2}}};
-use sha512_halo2::sha512::{BlockWord, Sha512 as OtherSha512, Table16Chip, Table16Config,IV,BLOCK_SIZE};
 use halo2_proofs::{
-    circuit::{AssignedCell, Chip, Layouter, Region, Value, SimpleFloorPlanner},
+    circuit::{Layouter, SimpleFloorPlanner, Value},
+    dev::MockProver,
     halo2curves::bn256,
-    plonk::{Advice, Any, Assigned, Column, ConstraintSystem, Error, Circuit}, dev::MockProver,
+    plonk::{Circuit, ConstraintSystem, Error},
 };
-use halo2_proofs::arithmetic::FieldExt;
+use sha2::{Digest, Sha512};
+use sha512_halo2::sha512::{
+    BlockWord, Sha512 as OtherSha512, Table16Chip, Table16Config, BLOCK_SIZE, IV,
+};
 
 fn preprocess_message(message: &str) -> Vec<Vec<u8>> {
-    // translate message into bits
-    let bits = translate(message);
-    // message length
-    let length = bits.len();
-    // get length in bits of message (64 bit block)
-    let message_len = format!("{:0128b}", length)
+    let mut bits = translate(message);
+    let msg_len = bits.len();
+    let message_len = format!("{:0128b}", msg_len)
         .chars()
         .map(|c| c.to_digit(10).unwrap() as u8)
         .collect::<Vec<_>>();
-    // if length smaller than 448 handle block individually otherwise
-    // if exactly 448 then add single 1 and add up to 1024 and if longer than 448
-    // create multiple of 512 - 64 bits for the length at the end of the message (big endian)
-    if length < 896 {
-        // append single 1
-        let mut bits = bits;
-        bits.push(1);
-        // fill zeros little endian wise
-        fill_zeros(&mut bits, 896, "LE");
-        // add the 64 bits representing the length of the message
-        bits.extend_from_slice(&message_len);
-        // return as list
-        vec![bits]
-    } else if length == 896 {
-        let mut bits = bits;
-        bits.push(1);
-        // moves to next message block - total length = 1024
-        fill_zeros(&mut bits, 1024, "LE");
-        // replace the last 64 bits of the multiple of 512 with the original message length
-        let ln = bits.len();
-        bits[ln - 128..].copy_from_slice(&message_len);
-        // returns it in 512 bit chunks
-        chunker(&bits, 1024)
-    } else {
-        let mut bits = bits;
-        bits.push(1);
-        // loop until multiple of 512 if message length exceeds 448 bits
-        while bits.len() % 1024 != 0 {
-            bits.push(0);
-        }
-        // replace the last 64 bits of the multiple of 512 with the original message length
-        let ln = bits.len();
-        bits[ln - 128..].copy_from_slice(&message_len);
-        // returns it in 512 bit chunks
-        chunker(&bits, 1024)
+    let k = (896 - ((msg_len + 1) % 1024)) % 1024;
+    bits.push(1);
+    for _ in 0..k {
+        bits.push(0);
     }
+    println!("bits length after padding ={:?}", bits.len());
+    bits.extend_from_slice(&message_len);
+    println!("bits length after adding message length ={:?}", bits.len());
+    assert_eq!(bits.len() % 1024, 0);
+
+    chunker(&bits, 1024)
 }
 
 fn translate(message: &str) -> Vec<u8> {
@@ -73,27 +46,14 @@ fn translate(message: &str) -> Vec<u8> {
     bits
 }
 
-fn fill_zeros(bits: &mut Vec<u8>, length: usize, endian: &str) {
-    let l = bits.len();
-    if endian == "LE" {
-        for _ in l..length {
-            bits.push(0);
-        }
-    } else {
-        while bits.len() < length {
-            bits.insert(0, 0);
-        }
-    }
-}
-
 fn chunker(bits: &[u8], chunk_length: usize) -> Vec<Vec<u8>> {
-    bits.chunks(chunk_length).map(|chunk| chunk.to_vec()).collect()
+    bits.chunks(chunk_length)
+        .map(|chunk| chunk.to_vec())
+        .collect()
 }
-
-
 
 #[test]
-fn sha512_test(){
+fn sha512_test() {
     #[derive(Default)]
     struct MyCircuit {}
 
@@ -118,14 +78,20 @@ fn sha512_test(){
             let table16_chip = Table16Chip::construct(config);
 
             // Test vector: "12"
-            let str = "12";
-            let result = preprocess_message(&str.repeat(55));
-            let mut res_new : Vec<Vec<Vec<u8>>> = Vec::new();
-            for y in result{
+            let str =
+                "0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
+            //let str = "abc";
+            let result = preprocess_message(&str);
+            for x in result.iter() {
+                println!("BLOCK LEN ={:?}", x.len());
+            }
+            let mut res_new: Vec<Vec<Vec<u8>>> = Vec::new();
+            for y in result {
                 let chnk = y.chunks(64).map(|chunk| chunk.to_vec()).collect::<Vec<_>>();
                 res_new.push(chnk);
             }
-            let mut str_vec : Vec<BlockWord> = Vec::new();
+            println!("reached here 1");
+            let mut str_vec: Vec<BlockWord> = Vec::new();
             for y in res_new {
                 for x in y {
                     let bin_str = x.iter().map(|&b| b.to_string()).collect::<String>();
@@ -133,24 +99,30 @@ fn sha512_test(){
                     // let num = format!("0b{:064b}", bin_num);
                     str_vec.push(BlockWord(Value::known(bin_num)));
                 }
-            }   
-            let expected_digest = Sha512::digest(&str.repeat(55));
-            let digest = OtherSha512::digest(table16_chip, layouter.namespace(|| "'abc' * 2"), &str_vec)?;
+            }
+            println!("reached here 2");
+            let expected_digest = Sha512::digest(&str);
+            let digest =
+                OtherSha512::digest(table16_chip, layouter.namespace(|| "'abc' * 2"), &str_vec)?;
+            println!("reached here 3");
             let mut s: Vec<u64> = Vec::new();
             for i in 0..8 {
-                let temp = &expected_digest[8*i..8*i+8];
+                let temp = &expected_digest[8 * i..8 * i + 8];
                 let mut string = String::from("0b");
                 for num in temp {
                     string.push_str(&format!("{:08b}", num));
                 }
                 s.push(u64::from_str_radix(&string[2..], 2).unwrap());
             }
+            println!("digest ={:?}", digest);
+            println!("reached here 4");
             for (idx, digest_word) in digest.0.iter().enumerate() {
+                println!("digest word ={:?}", digest_word.0);
                 digest_word.0.assert_if_known(|digest_word| {
-                    (*digest_word as u128 + IV[idx] as u128) as u64
-                        == s[idx] as u64
-                    });
-                }
+                    (((*digest_word as u128) + (IV[idx] as u128)) as u64) == (s[idx] as u64)
+                });
+            }
+            println!("reached here 5");
             Ok(())
         }
     }
@@ -161,6 +133,9 @@ fn sha512_test(){
     };
     prover.assert_satisfied();
 }
-
-
-
+#[test]
+fn test_preproces_msg() {
+    let _ = preprocess_message(
+        &"0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF".to_string()
+    );
+}

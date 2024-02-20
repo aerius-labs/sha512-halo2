@@ -277,8 +277,6 @@ impl MessageScheduleConfig {
         // Assign `d` (3-bit piece) lookup
         let d = AssignedBits::<3>::assign_bits(region, || "d", a_3, row + 1, pieces[6].clone())?;
 
-
-
         Ok(Subregion3Word {
             index,
             a,
@@ -329,25 +327,30 @@ impl MessageScheduleConfig {
         word.a.copy_advice(|| "a", region, a_6, row)?;
 
         // Assign `spread_b` and copy constraint
-        word.spread_b.copy_advice(|| "spread_b", region, a_5, row - 1)?;
+        word.spread_b
+            .copy_advice(|| "spread_b", region, a_5, row - 1)?;
 
         // Assign `spread_c_lo_lo` and copy constraint
-        word.spread_c_lo_lo.copy_advice(|| "c_lo_lo", region, a_5, row)?;
+        word.spread_c_lo_lo
+            .copy_advice(|| "c_lo_lo", region, a_5, row)?;
 
         // Assign `spread_c_lo_hi` and copy constraint
-        word.spread_c_lo_hi.copy_advice(|| "c_lo_hi", region, a_4, row)?;
+        word.spread_c_lo_hi
+            .copy_advice(|| "c_lo_hi", region, a_4, row)?;
 
         // Assign `spread_c_hi_lo` and copy constraint
-        word.spread_c_hi_lo.copy_advice(|| "c_hi_lo", region, a_4, row + 2)?;
+        word.spread_c_hi_lo
+            .copy_advice(|| "c_hi_lo", region, a_4, row + 2)?;
 
         // Assign `spread_c_hi_hi` and copy constraint
-        word.spread_c_hi_hi.copy_advice(|| "c_hi_hi", region, a_6, row + 2)?;
+        word.spread_c_hi_hi
+            .copy_advice(|| "c_hi_hi", region, a_6, row + 2)?;
 
         // Assign `d` and copy constraint
         word.d.copy_advice(|| "d", region, a_3, row + 1)?;
 
-         // Witness `spread_d`
-         {
+        // Witness `spread_d`
+        {
             let spread_d = word.d.value().map(spread_bits);
             AssignedBits::<6>::assign_bits(region, || "spread_d", a_4, row + 1, spread_d)?;
         }
