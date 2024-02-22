@@ -1,6 +1,5 @@
 use std::convert::TryInto;
 use std::marker::PhantomData;
-
 use super::Sha512Instructions;
 use halo2_proofs::{
     circuit::{AssignedCell, Chip, Layouter, Region, Value},
@@ -8,13 +7,14 @@ use halo2_proofs::{
     plonk::{Advice, Any, Assigned, Column, ConstraintSystem, Error},
 };
 
-mod compression;
+pub mod compression;
+use compression::{compression_util::match_state, CompressionConfig};
 mod gates;
 mod message_schedule;
 mod spread_table;
 mod util;
 
-use compression::*;
+pub use compression::*;
 use gates::*;
 use message_schedule::*;
 use spread_table::*;
@@ -439,6 +439,7 @@ impl Sha512Instructions<bn256::Fr> for Table16Chip {
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
     ) -> Result<State, Error> {
+        println!("RUNNING initialization_vector FUNCTION");
         self.config().compression.initialize_with_iv(layouter, IV)
     }
 
@@ -447,6 +448,7 @@ impl Sha512Instructions<bn256::Fr> for Table16Chip {
         layouter: &mut impl Layouter<bn256::Fr>,
         init_state: &Self::State,
     ) -> Result<Self::State, Error> {
+        println!("RUNNING INITIALIZATION");               
         self.config()
             .compression
             .initialize_with_state(layouter, init_state.clone())

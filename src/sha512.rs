@@ -3,14 +3,12 @@ use std::convert::TryInto;
 use std::fmt;
 
 use halo2_proofs::arithmetic::FieldExt;
-use halo2_proofs::{
-    circuit::{Chip, Layouter},
-    plonk::Error,
-};
+use halo2_proofs::{ circuit::{ Chip, Layouter }, plonk::Error };
 
-mod table16;
+pub mod table16;
 
-pub use table16::{BlockWord, Table16Chip, Table16Config, IV};
+pub use table16::{ BlockWord, Table16Chip, Table16Config, IV };
+use table16::compression::compression_util::match_state;
 
 /// The size of a SHA-512 block, in 64-bit words.
 pub const BLOCK_SIZE: usize = 16;
@@ -32,7 +30,7 @@ pub trait Sha512Instructions<F: FieldExt>: Chip<F> {
     fn initialization(
         &self,
         layouter: &mut impl Layouter<F>,
-        init_state: &Self::State,
+        init_state: &Self::State
     ) -> Result<Self::State, Error>;
 
     /// Starting from the given initialized state, processes a block of input and returns the
@@ -41,14 +39,14 @@ pub trait Sha512Instructions<F: FieldExt>: Chip<F> {
         &self,
         layouter: &mut impl Layouter<F>,
         initialized_state: &Self::State,
-        input: [Self::BlockWord; BLOCK_SIZE],
+        input: [Self::BlockWord; BLOCK_SIZE]
     ) -> Result<Self::State, Error>;
 
     /// Converts the given state into a message digest.
     fn digest(
         &self,
         layouter: &mut impl Layouter<F>,
-        state: &Self::State,
+        state: &Self::State
     ) -> Result<[Self::BlockWord; DIGEST_SIZE], Error>;
 }
 
@@ -82,12 +80,14 @@ impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
     pub fn update(
         &mut self,
         mut layouter: impl Layouter<F>,
-        mut data: &[Sha512Chip::BlockWord],
+        mut data: &[Sha512Chip::BlockWord]
     ) -> Result<(), Error> {
         self.length += data.len() * 64;
 
         // Fill the current block, if possible.
+
         let remaining = BLOCK_SIZE - self.cur_block.len();
+
         let (l, r) = data.split_at(min(remaining, data.len()));
         self.cur_block.extend_from_slice(l);
         data = r;
@@ -98,23 +98,24 @@ impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
         }
 
         // Process the now-full current block.
+        println!("reached 1st compression IV");
         self.state = self.chip.compress(
             &mut layouter,
             &self.state,
-            self.cur_block[..]
-                .try_into()
-                .expect("cur_block.len() == BLOCK_SIZE"),
+            self.cur_block[..].try_into().expect("cur_block.len() == BLOCK_SIZE")
         )?;
+
         self.cur_block.clear();
 
         // Process any additional full blocks.
         let mut chunks_iter = data.chunks_exact(BLOCK_SIZE);
+        println!("reached 2nd compression IV");
         for chunk in &mut chunks_iter {
             self.state = self.chip.initialization(&mut layouter, &self.state)?;
             self.state = self.chip.compress(
                 &mut layouter,
                 &self.state,
-                chunk.try_into().expect("chunk.len() == BLOCK_SIZE"),
+                chunk.try_into().expect("chunk.len() == BLOCK_SIZE")
             )?;
         }
 
@@ -128,24 +129,21 @@ impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
     /// Retrieve result and consume hasher instance.
     pub fn finalize(
         mut self,
-        mut layouter: impl Layouter<F>,
+        mut layouter: impl Layouter<F>
     ) -> Result<Sha512Digest<Sha512Chip::BlockWord>, Error> {
         // Pad the remaining block
         if !self.cur_block.is_empty() {
             let padding = vec![Sha512Chip::BlockWord::default(); BLOCK_SIZE - self.cur_block.len()];
+
             self.cur_block.extend_from_slice(&padding);
             self.state = self.chip.initialization(&mut layouter, &self.state)?;
             self.state = self.chip.compress(
                 &mut layouter,
                 &self.state,
-                self.cur_block[..]
-                    .try_into()
-                    .expect("cur_block.len() == BLOCK_SIZE"),
+                self.cur_block[..].try_into().expect("cur_block.len() == BLOCK_SIZE")
             )?;
         }
-        self.chip
-            .digest(&mut layouter, &self.state)
-            .map(Sha512Digest)
+        self.chip.digest(&mut layouter, &self.state).map(Sha512Digest)
     }
 
     /// Convenience function to compute hash of the data. It will handle hasher creation,
@@ -153,10 +151,16 @@ impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
     pub fn digest(
         chip: Sha512Chip,
         mut layouter: impl Layouter<F>,
-        data: &[Sha512Chip::BlockWord],
+        data: &[Sha512Chip::BlockWord]
     ) -> Result<Sha512Digest<Sha512Chip::BlockWord>, Error> {
-        let mut hasher = Self::new(chip, layouter.namespace(|| "init"))?;
-        hasher.update(layouter.namespace(|| "update"), data)?;
+        let mut hasher = Self::new(
+            chip,
+            layouter.namespace(|| "init")
+        )?;
+        hasher.update(
+            layouter.namespace(|| "update"),
+            data
+        )?;
         hasher.finalize(layouter.namespace(|| "finalize"))
     }
 }
