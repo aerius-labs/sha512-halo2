@@ -1,5 +1,3 @@
-use self::compression_util::match_state;
-
 use super::{
     super::DIGEST_SIZE,
     util::{ i2lebsp, lebs2ip },
@@ -978,44 +976,22 @@ impl CompressionConfig {
             || "initialize_with_iv",
             |mut region| {
                 new_state = self.initialize_iv(&mut region, init_state)?;
-                let (a, b, c, d, e, f, g, h) = match_state(new_state.clone());
-                println!("called initialize_with_iv2");
-                println!("Initialized state with IV:");
-                println!("a = {:?}", a.dense_halves.value());
-                println!("b = {:?}", b.dense_halves.value());
-                println!("c = {:?}", c.dense_halves.value());
-                println!("d = {:?}", d.value());
-                println!("e = {:?}", e.dense_halves.value());
-                println!("f = {:?}", f.dense_halves.value());
-                println!("g = {:?}", g.dense_halves.value());
-                println!("h = {:?}", h.value());
-
                 Ok(())
             }
         )?;
         Ok(new_state)
     }
-     pub(super) fn initialize_with_interimidiate_state(
+
+    pub(super) fn initialize_with_interimidiate_state(
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
-        init_state:Vec<Value<u64>>
+        init_state: Vec<Value<u64>>
     ) -> Result<State, Error> {
         let mut new_state = State::empty_state();
         layouter.assign_region(
-            || "initialize_with_iv",
+            || "initialize_with_interimidiate_state",
             |mut region| {
                 new_state = self.initialize_intermidiate(&mut region, init_state.clone())?;
-                let (a, b, c, d, e, f, g, h) = match_state(new_state.clone());
-               println!("INTERMIDIATE STATE:");  
-                println!("a = {:?}", a.dense_halves.value());
-                println!("b = {:?}", b.dense_halves.value());
-                println!("c = {:?}", c.dense_halves.value());
-                println!("d = {:?}", d.value());
-                println!("e = {:?}", e.dense_halves.value());
-                println!("f = {:?}", f.dense_halves.value());
-                println!("g = {:?}", g.dense_halves.value());
-                println!("h = {:?}", h.value());
-                println!("-------------------------");
                 Ok(())
             }
         )?;
@@ -1033,29 +1009,7 @@ impl CompressionConfig {
         layouter.assign_region(
             || "initialize_with_state",
             |mut region| {
-                // let (a, b, c, d, e, f, g, h) = match_state(new_state.clone());
-                // println!("Initialized state input to the block");
-                // println!("a = {:?}", a.dense_halves.value());
-                // println!("b = {:?}", b.dense_halves.value());
-                // println!("c = {:?}", c.dense_halves.value());
-                // println!("d = {:?}", d.value());
-                // println!("e = {:?}", e.dense_halves.value());
-                // println!("f = {:?}", f.dense_halves.value());
-                // println!("g = {:?}", g.dense_halves.value());
-                // println!("h = {:?}", h.value());
-
                 new_state = self.initialize_state(&mut region, init_state.clone())?;
-               // let (a, b, c, d, e, f, g, h) = match_state(new_state.clone());
-                 println!("Initialize_state from prev block:");
-                // println!("a = {:?}", a.dense_halves.value());
-                // println!("b = {:?}", b.dense_halves.value());
-                // println!("c = {:?}", c.dense_halves.value());
-                // println!("d = {:?}", d.value());
-                // println!("e = {:?}", e.dense_halves.value());
-                // println!("f = {:?}", f.dense_halves.value());
-                // println!("g = {:?}", g.dense_halves.value());
-                // println!("h = {:?}", h.value());
-
                 Ok(())
             }
         )?;
@@ -1080,16 +1034,6 @@ impl CompressionConfig {
                 Ok(())
             }
         )?;
-             let (a, b, c, d, e, f, g, h) = match_state(state.clone());
-                // println!("STATE VALUE AFTER COMPRESSION:");
-                // println!("a = {:?}", a.dense_halves.value());
-                // println!("b = {:?}", b.dense_halves.value());
-                // println!("c = {:?}", c.dense_halves.value());
-                // println!("d = {:?}", d.value());
-                // println!("e = {:?}", e.dense_halves.value());
-                // println!("f = {:?}", f.dense_halves.value());
-                // println!("g = {:?}", g.dense_halves.value());
-                // println!("h = {:?}", h.value());
         Ok(state)
     }
 
@@ -1115,11 +1059,8 @@ impl CompressionConfig {
 mod tests {
     use std::ops::Add;
 
-    use crate::sha512::table16::compression_util::match_state;
 
     use super::super::{
-        super::BLOCK_SIZE,
-        msg_schedule_test_input,
         BlockWord,
         Table16Chip,
         Table16Config,
@@ -1195,11 +1136,12 @@ mod tests {
                 Table16Chip::load(config.clone(), &mut layouter)?;
 
                 // Test vector: "abc"
-                let input: [BlockWord; BLOCK_SIZE] = msg_schedule_test_input();
-
+               
                 let str =
-                    "0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
+                    "0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
                 let result = preprocess_message(&str);
+                println!("result_length = {:?}", result.len());
+                println!("result = {:?}", result[0].len());
 
                 let mut res_new: Vec<Vec<Vec<u8>>> = Vec::new();
                 for y in result {
@@ -1209,7 +1151,6 @@ mod tests {
                         .collect::<Vec<_>>();
                     res_new.push(chnk);
                 }
-                println!("reached here 1");
                 let mut str_vec: Vec<BlockWord> = Vec::new();
                 for y in res_new {
                     for x in y {
@@ -1223,42 +1164,51 @@ mod tests {
                         str_vec.push(BlockWord(Value::known(bin_num)));
                     }
                 }
-
-                let input: [BlockWord; 16] = str_vec[0..16].try_into().unwrap();
-
-                let (_, w_halves) = config.message_schedule.process(&mut layouter, input)?;
+                let input = str_vec.chunks(16).collect::<Vec<_>>();
                 let compression = config.compression.clone();
-                let initial_state = compression.initialize_with_iv(&mut layouter, IV)?;
-                let state = config.compression.compress(&mut layouter, initial_state.clone(), w_halves)?;
-            
 
-                  let digest = config.compression.digest(&mut layouter, state.clone())?;
-                  let inter_state= (0..8).map(|i|{digest[i].0}).collect::<Vec<_>>();
-                  let mut intermidiate_state_u64=Vec::<Value<u64>>::new();
+                let mut initial_state = compression.initialize_with_iv(&mut layouter, IV)?;
 
-                  for i in 0..8{
-                    intermidiate_state_u64.push(inter_state[i].add(Value::known(IV[i])));
-                  }
-
-                  let intermidiate_state=compression.initialize_with_interimidiate_state(&mut layouter, intermidiate_state_u64.clone())?;
+                let mut intermidiate_state_u64:Vec<Value<u64>>=(0..8).map(|i| Value::known(IV[i])).collect();
 
 
+                for (i, data) in input.iter().enumerate() {
+                    let (_, w_halves) = config.message_schedule.process(
+                        &mut layouter,
+                        data[0..16].try_into().unwrap()
+                    )?;
+                    if i == 0 {
+                         initial_state = compression.initialize_with_iv(&mut layouter, IV)?;
+                    } else {
+                           initial_state = compression.initialize_with_interimidiate_state(
+                            &mut layouter,
+                            intermidiate_state_u64.clone()
+                        )?;
+                    }
 
-                 let input: [BlockWord; 16] = str_vec[16..].try_into().unwrap();
+                    let state = config.compression.compress(
+                        &mut layouter,
+                        initial_state.clone(),
+                        w_halves
+                    )?;
 
-                  let (_, w_halves) = config.message_schedule.process(&mut layouter, input)?;
-                let initial_state=compression.initialize_with_state(&mut layouter, intermidiate_state)?;
-                let state = config.compression.compress(&mut layouter, initial_state.clone(), w_halves)?;
-           
+                    let digest = config.compression.digest(&mut layouter, state.clone())?;
+                     intermidiate_state_u64 = (0..8)
+                        .map(|i: usize| { digest[i].0.add(intermidiate_state_u64[i]) })
+                        .collect::<Vec<_>>();
 
 
-                let digest = config.compression.digest(&mut layouter, state)?;
-                println!("{:?}", digest);
+        
+                }
+
+                let final_digest=compression.initialize_with_interimidiate_state(
+                    &mut layouter,
+                    intermidiate_state_u64.clone()
+                )?;
+                let final_digest=config.compression.digest(&mut layouter, final_digest.clone())?;
 
                 println!("----------FINAL DIGEST----------");
-                for (idx, digest_word) in digest.iter().enumerate() {
-                   println!("{:?}",digest_word.0.add(intermidiate_state_u64[idx]));
-                }
+                println!("{:?}", final_digest);
 
                 Ok(())
             }

@@ -12,7 +12,6 @@ use sha512_halo2::sha512::{
     Sha512 as OtherSha512,
     Table16Chip,
     Table16Config,
-    BLOCK_SIZE,
     IV,
 };
 

@@ -127,21 +127,10 @@ impl CompressionConfig {
     ) -> Result<State, Error> {
         let a_7 = self.extras[3];
         let (a, b, c, d, e, f, g, h) = match_state(state);
-        println!("INITIALIZE_STATE START");
-        println!("a = {:?}", a.dense_halves.value());
-        println!("b = {:?}", b.dense_halves.value());
-        println!("c = {:?}", c.dense_halves.value());
-        println!("d = {:?}", d.value());
-        println!("e = {:?}", e.dense_halves.value());
-        println!("f = {:?}", f.dense_halves.value());
-        println!("g = {:?}", g.dense_halves.value());
-        println!("h = {:?}", h.value());
-
+    
         // Decompose E into (14, 4, 23, 23)-bit chunks
         let e = e.dense_halves.value();
         let e = self.decompose_e(region, RoundIdx::Init, e)?;
-
-        println!("e = {:?}", e.dense_halves.value());
 
         // Decompose F, G
         let f = f.dense_halves.value();
@@ -169,15 +158,6 @@ impl CompressionConfig {
         let d_row = get_d_row(RoundIdx::Init);
         let d = self.assign_word_halves_dense(region, d_row, a_7, d_row + 1, a_7, d)?;
 
-        println!("INITIALIZE_STATE END");
-        println!("a = {:?}", a.dense_halves.value());
-        println!("b = {:?}", b.dense_halves.value());
-        println!("c = {:?}", c.dense_halves.value());
-        println!("d = {:?}", d.value());
-        println!("e = {:?}", e.dense_halves.value());
-        println!("f = {:?}", f.dense_halves.value());
-        println!("g = {:?}", g.dense_halves.value());
-        println!("h = {:?}", h.value());
         Ok(
             State::new(
                 StateWord::A(a),

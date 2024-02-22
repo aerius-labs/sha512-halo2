@@ -2,7 +2,6 @@ use std::convert::TryInto;
 
 use super::{
     super::BLOCK_SIZE,
-    util::lebs2ip,
     AssignedBits,
     BlockWord,
     SpreadInputs,
@@ -455,7 +454,6 @@ impl MessageScheduleConfig {
                 }
 
                 // Assign W[0..16]
-                println!("w_wrapper");
                 for (i, word) in input.iter().enumerate() {
                     let (word, halves) = self.assign_word_and_halves(&mut region, word.0, i)?;
                     w.push(MessageWord(word.clone()));

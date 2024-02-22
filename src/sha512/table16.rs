@@ -7,14 +7,14 @@ use halo2_proofs::{
     plonk::{Advice, Any, Assigned, Column, ConstraintSystem, Error},
 };
 
-pub mod compression;
-use compression::{compression_util::match_state, CompressionConfig};
+mod compression;
+use compression:: CompressionConfig;
 mod gates;
 mod message_schedule;
 mod spread_table;
 mod util;
 
-pub use compression::*;
+use compression::*;
 use gates::*;
 use message_schedule::*;
 use spread_table::*;

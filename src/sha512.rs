@@ -2,13 +2,12 @@ use std::cmp::min;
 use std::convert::TryInto;
 use std::fmt;
 
+
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::{ circuit::{ Chip, Layouter }, plonk::Error };
-
 pub mod table16;
 
 pub use table16::{ BlockWord, Table16Chip, Table16Config, IV };
-use table16::compression::compression_util::match_state;
 
 /// The size of a SHA-512 block, in 64-bit words.
 pub const BLOCK_SIZE: usize = 16;
@@ -64,7 +63,11 @@ pub struct Sha512<F: FieldExt, CS: Sha512Instructions<F>> {
     length: usize,
 }
 
+
+
 impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
+
+   
     /// Create a new hasher instance.
     pub fn new(chip: Sha512Chip, mut layouter: impl Layouter<F>) -> Result<Self, Error> {
         let state = chip.initialization_vector(&mut layouter)?;
@@ -98,18 +101,25 @@ impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
         }
 
         // Process the now-full current block.
-        println!("reached 1st compression IV");
         self.state = self.chip.compress(
             &mut layouter,
             &self.state,
             self.cur_block[..].try_into().expect("cur_block.len() == BLOCK_SIZE")
         )?;
 
+        let cur_digest = self.chip.digest(&mut layouter, &self.state)?;
+        /* let mut intermidiate_state_u64=(0..8).map(|i| { digest[i].0.add(Value::known(IV[i]))}).collect::<Vec<_>>();
+            let intermidiate_state = compression.initialize_with_interimidiate_state(
+             &mut layouter,
+            intermidiate_state_u64.clone()
+            )?;
+            self.state = intermidiate_state;
+        */
+
         self.cur_block.clear();
 
         // Process any additional full blocks.
         let mut chunks_iter = data.chunks_exact(BLOCK_SIZE);
-        println!("reached 2nd compression IV");
         for chunk in &mut chunks_iter {
             self.state = self.chip.initialization(&mut layouter, &self.state)?;
             self.state = self.chip.compress(
@@ -117,6 +127,16 @@ impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
                 &self.state,
                 chunk.try_into().expect("chunk.len() == BLOCK_SIZE")
             )?;
+            /*
+               let cur_digest = self.chip.digest(&mut layouter, &self.state)?;
+               let inter_state_u64=(0..8).map(|i| { digest[i].0.add(intermidiate_state_u64[i]))}).collect::<Vec<_>>();
+               intermidiate_state_u64 = inter_state_u64.clone();
+               let inter_state = compression.initialize_with_interimidiate_state(
+                &mut layouter,
+                inter_state_u64.clone()
+                )?;
+                self.state = inter_state;
+             */
         }
 
         // Cache the remaining partial block, if any.
@@ -157,10 +177,12 @@ impl<F: FieldExt, Sha512Chip: Sha512Instructions<F>> Sha512<F, Sha512Chip> {
             chip,
             layouter.namespace(|| "init")
         )?;
+        
         hasher.update(
             layouter.namespace(|| "update"),
             data
         )?;
+
         hasher.finalize(layouter.namespace(|| "finalize"))
     }
 }
