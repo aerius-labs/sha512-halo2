@@ -1,19 +1,13 @@
 use super::{
     super::DIGEST_SIZE,
-    util::{ i2lebsp, lebs2ip },
-    AssignedBits,
-    BlockWord,
-    SpreadInputs,
-    SpreadVar,
-    Table16Assignment,
-    ROUNDS,
-    STATE,
+    util::{i2lebsp, lebs2ip},
+    AssignedBits, BlockWord, SpreadInputs, SpreadVar, Table16Assignment, ROUNDS, STATE,
 };
 
 use halo2_proofs::{
-    circuit::{ Layouter, Value },
+    circuit::{Layouter, Value},
     halo2curves::bn256,
-    plonk::{ Advice, Column, ConstraintSystem, Error, Selector },
+    plonk::{Advice, Column, ConstraintSystem, Error, Selector},
     poly::Rotation,
 };
 
@@ -32,8 +26,9 @@ pub trait UpperSigmaVar<
     const A_LEN: usize,
     const B_LEN: usize,
     const C_LEN: usize,
-    const D_LEN: usize
-> {
+    const D_LEN: usize,
+>
+{
     fn spread_a(&self) -> Value<[bool; A_LEN]>;
     fn spread_b(&self) -> Value<[bool; B_LEN]>;
     fn spread_c(&self) -> Value<[bool; C_LEN]>;
@@ -139,45 +134,69 @@ impl AbcdVar {
             val[Self::c_lo_range()].to_vec(),
             val[Self::c_hi_range()].to_vec(),
             val[Self::d_lo_range()].to_vec(),
-            val[Self::d_hi_range()].to_vec()
+            val[Self::d_hi_range()].to_vec(),
         ]
     }
 }
 
 impl UpperSigmaVar<56, 12, 10, 50> for AbcdVar {
     fn spread_a(&self) -> Value<[bool; 56]> {
-        self.a_lo.spread
+        self.a_lo
+            .spread
             .value()
             .zip(self.a_hi.spread.value())
             .map(|(a_lo, a_hi)| {
-                a_lo.iter().chain(a_hi.iter()).copied().collect::<Vec<_>>().try_into().unwrap()
+                a_lo.iter()
+                    .chain(a_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
     }
 
     fn spread_b(&self) -> Value<[bool; 12]> {
-        self.b_lo.spread
+        self.b_lo
+            .spread
             .value()
             .zip(self.b_hi.spread.value())
             .map(|(b_lo, b_hi)| {
-                b_lo.iter().chain(b_hi.iter()).copied().collect::<Vec<_>>().try_into().unwrap()
+                b_lo.iter()
+                    .chain(b_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
     }
 
     fn spread_c(&self) -> Value<[bool; 10]> {
-        self.c_lo.spread
+        self.c_lo
+            .spread
             .value()
             .zip(self.c_hi.spread.value())
             .map(|(c_lo, c_hi)| {
-                c_lo.iter().chain(c_hi.iter()).copied().collect::<Vec<_>>().try_into().unwrap()
+                c_lo.iter()
+                    .chain(c_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
     }
 
     fn spread_d(&self) -> Value<[bool; 50]> {
-        self.d_lo.spread
+        self.d_lo
+            .spread
             .value()
             .zip(self.d_hi.spread.value())
             .map(|(d_lo, d_hi)| {
-                d_lo.iter().chain(d_hi.iter()).copied().collect::<Vec<_>>().try_into().unwrap()
+                d_lo.iter()
+                    .chain(d_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
     }
 }
@@ -239,7 +258,7 @@ impl EfghVar {
             val[Self::c_lo_range()].to_vec(),
             val[Self::c_hi_range()].to_vec(),
             val[Self::d_lo_range()].to_vec(),
-            val[Self::d_hi_range()].to_vec()
+            val[Self::d_hi_range()].to_vec(),
         ]
     }
 }
@@ -249,29 +268,47 @@ impl UpperSigmaVar<28, 8, 46, 46> for EfghVar {
     }
 
     fn spread_b(&self) -> Value<[bool; 8]> {
-        self.b_lo.spread
+        self.b_lo
+            .spread
             .value()
             .zip(self.b_hi.spread.value())
             .map(|(b_lo, b_hi)| {
-                b_lo.iter().chain(b_hi.iter()).copied().collect::<Vec<_>>().try_into().unwrap()
+                b_lo.iter()
+                    .chain(b_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
     }
 
     fn spread_c(&self) -> Value<[bool; 46]> {
-        self.c_lo.spread
+        self.c_lo
+            .spread
             .value()
             .zip(self.c_hi.spread.value())
             .map(|(c_lo, c_hi)| {
-                c_lo.iter().chain(c_hi.iter()).copied().collect::<Vec<_>>().try_into().unwrap()
+                c_lo.iter()
+                    .chain(c_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
     }
 
     fn spread_d(&self) -> Value<[bool; 46]> {
-        self.d_lo.spread
+        self.d_lo
+            .spread
             .value()
             .zip(self.d_hi.spread.value())
             .map(|(d_lo, d_hi)| {
-                d_lo.iter().chain(d_hi.iter()).copied().collect::<Vec<_>>().try_into().unwrap()
+                d_lo.iter()
+                    .chain(d_hi.iter())
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
     }
 }
@@ -323,7 +360,7 @@ impl RoundWordA {
     pub fn new(
         pieces: AbcdVar,
         dense_halves: RoundWordDense,
-        spread_halves: RoundWordSpread
+        spread_halves: RoundWordSpread,
     ) -> Self {
         RoundWordA {
             pieces: Some(pieces),
@@ -352,7 +389,7 @@ impl RoundWordE {
     pub fn new(
         pieces: EfghVar,
         dense_halves: RoundWordDense,
-        spread_halves: RoundWordSpread
+        spread_halves: RoundWordSpread,
     ) -> Self {
         RoundWordE {
             pieces: Some(pieces),
@@ -409,7 +446,7 @@ impl State {
         e: StateWord,
         f: StateWord,
         g: StateWord,
-        h: StateWord
+        h: StateWord,
     ) -> Self {
         State {
             a: Some(a),
@@ -480,7 +517,7 @@ impl CompressionConfig {
         meta: &mut ConstraintSystem<bn256::Fr>,
         lookup: SpreadInputs,
         message_schedule: Column<Advice>,
-        extras: [Column<Advice>; 6]
+        extras: [Column<Advice>; 6],
     ) -> Self {
         let s_ch = meta.selector();
         let s_ch_neg = meta.selector();
@@ -567,7 +604,7 @@ impl CompressionConfig {
                 word_lo,
                 spread_word_lo,
                 word_hi,
-                spread_word_hi
+                spread_word_hi,
             )
         });
         // Decompose `E,F,G,H` words into (14, 4, 23, 23)-bit chunks.
@@ -624,7 +661,7 @@ impl CompressionConfig {
                 word_lo,
                 spread_word_lo,
                 word_hi,
-                spread_word_hi
+                spread_word_hi,
             )
         });
 
@@ -668,7 +705,7 @@ impl CompressionConfig {
                 spread_c_lo,
                 spread_c_hi,
                 spread_d_lo,
-                spread_d_hi
+                spread_d_hi,
             )
         });
 
@@ -710,7 +747,7 @@ impl CompressionConfig {
                 spread_c_lo,
                 spread_c_hi,
                 spread_d_lo,
-                spread_d_hi
+                spread_d_hi,
             )
         });
 
@@ -745,7 +782,7 @@ impl CompressionConfig {
                 spread_e_lo,
                 spread_e_hi,
                 spread_f_lo,
-                spread_f_hi
+                spread_f_hi,
             )
         });
 
@@ -783,7 +820,7 @@ impl CompressionConfig {
                 spread_e_neg_lo,
                 spread_e_neg_hi,
                 spread_g_lo,
-                spread_g_hi
+                spread_g_hi,
             )
         });
 
@@ -820,7 +857,7 @@ impl CompressionConfig {
                 spread_b_lo,
                 spread_b_hi,
                 spread_c_lo,
-                spread_c_hi
+                spread_c_hi,
             )
         });
 
@@ -859,7 +896,7 @@ impl CompressionConfig {
                 k_lo,
                 k_hi,
                 w_lo,
-                w_hi
+                w_hi,
             )
         });
 
@@ -886,7 +923,7 @@ impl CompressionConfig {
                 maj_abc_lo,
                 maj_abc_hi,
                 h_prime_lo,
-                h_prime_hi
+                h_prime_hi,
             )
         });
 
@@ -909,7 +946,7 @@ impl CompressionConfig {
                 d_lo,
                 d_hi,
                 h_prime_lo,
-                h_prime_hi
+                h_prime_hi,
             )
         });
 
@@ -930,19 +967,8 @@ impl CompressionConfig {
             let word_3 = meta.query_advice(a_8, Rotation::next());
 
             CompressionGate::s_digest(
-                s_digest,
-                lo_0,
-                hi_0,
-                word_0,
-                lo_1,
-                hi_1,
-                word_1,
-                lo_2,
-                hi_2,
-                word_2,
-                lo_3,
-                hi_3,
-                word_3
+                s_digest, lo_0, hi_0, word_0, lo_1, hi_1, word_1, lo_2, hi_2, word_2, lo_3, hi_3,
+                word_3,
             )
         });
 
@@ -969,7 +995,7 @@ impl CompressionConfig {
     pub(super) fn initialize_with_iv(
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
-        init_state: [u64; STATE]
+        init_state: [u64; STATE],
     ) -> Result<State, Error> {
         let mut new_state = State::empty_state();
         layouter.assign_region(
@@ -977,7 +1003,7 @@ impl CompressionConfig {
             |mut region| {
                 new_state = self.initialize_iv(&mut region, init_state)?;
                 Ok(())
-            }
+            },
         )?;
         Ok(new_state)
     }
@@ -985,15 +1011,15 @@ impl CompressionConfig {
     pub(super) fn initialize_with_interimidiate_state(
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
-        init_state: Vec<Value<u64>>
+        init_state: &[Value<u64>],
     ) -> Result<State, Error> {
         let mut new_state = State::empty_state();
         layouter.assign_region(
             || "initialize_with_interimidiate_state",
             |mut region| {
-                new_state = self.initialize_intermidiate(&mut region, init_state.clone())?;
+                new_state = self.initialize_intermidiate(&mut region, init_state)?;
                 Ok(())
-            }
+            },
         )?;
         Ok(new_state)
     }
@@ -1003,7 +1029,7 @@ impl CompressionConfig {
     pub(super) fn initialize_with_state(
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
-        init_state: State
+        init_state: State,
     ) -> Result<State, Error> {
         let mut new_state = State::empty_state();
         layouter.assign_region(
@@ -1011,7 +1037,7 @@ impl CompressionConfig {
             |mut region| {
                 new_state = self.initialize_state(&mut region, init_state.clone())?;
                 Ok(())
-            }
+            },
         )?;
         Ok(new_state)
     }
@@ -1021,7 +1047,7 @@ impl CompressionConfig {
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
         initialized_state: State,
-        w_halves: [(AssignedBits<32>, AssignedBits<32>); ROUNDS]
+        w_halves: [(AssignedBits<32>, AssignedBits<32>); ROUNDS],
     ) -> Result<State, Error> {
         let mut state = State::empty_state();
         layouter.assign_region(
@@ -1032,7 +1058,7 @@ impl CompressionConfig {
                     state = self.assign_round(&mut region, idx.into(), state.clone(), w_halves)?;
                 }
                 Ok(())
-            }
+            },
         )?;
         Ok(state)
     }
@@ -1041,7 +1067,7 @@ impl CompressionConfig {
     pub(super) fn digest(
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
-        state: State
+        state: State,
     ) -> Result<[BlockWord; DIGEST_SIZE], Error> {
         let mut digest = [BlockWord(Value::known(0)); DIGEST_SIZE];
         layouter.assign_region(
@@ -1050,7 +1076,7 @@ impl CompressionConfig {
                 digest = self.assign_digest(&mut region, state.clone())?;
 
                 Ok(())
-            }
+            },
         )?;
         Ok(digest)
     }
@@ -1059,19 +1085,13 @@ impl CompressionConfig {
 mod tests {
     use std::ops::Add;
 
-
-    use super::super::{
-        BlockWord,
-        Table16Chip,
-        Table16Config,
-        IV,
-    };
+    use super::super::{BlockWord, Table16Chip, Table16Config, IV};
     use halo2_proofs::circuit::Value;
     use halo2_proofs::halo2curves::bn256;
     use halo2_proofs::{
-        circuit::{ Layouter, SimpleFloorPlanner },
+        circuit::{Layouter, SimpleFloorPlanner},
         dev::MockProver,
-        plonk::{ Circuit, ConstraintSystem, Error },
+        plonk::{Circuit, ConstraintSystem, Error},
     };
 
     fn preprocess_message(message: &str) -> Vec<Vec<u8>> {
@@ -1095,7 +1115,9 @@ mod tests {
         // string characters to unicode values
         let charcodes = message.chars().map(|c| c as u32);
         // unicode values to 8-bit strings (removed binary indicator)
-        let bytes = charcodes.map(|char| format!("{:08b}", char)).collect::<Vec<_>>();
+        let bytes = charcodes
+            .map(|char| format!("{:08b}", char))
+            .collect::<Vec<_>>();
         // 8-bit strings to list of bits as integers
         let mut bits = Vec::new();
         for byte in bytes {
@@ -1131,36 +1153,29 @@ mod tests {
             fn synthesize(
                 &self,
                 config: Self::Config,
-                mut layouter: impl Layouter<bn256::Fr>
+                mut layouter: impl Layouter<bn256::Fr>,
             ) -> Result<(), Error> {
                 Table16Chip::load(config.clone(), &mut layouter)?;
 
                 // Test vector: "abc"
-               
+
                 let str =
                     "0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCCDEF0123456789ABCDEF0123456789ABCDEFFFFFF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
                 let result = preprocess_message(&str);
-                println!("result_length = {:?}", result.len());
-                println!("result = {:?}", result[0].len());
+                println!("NO OF BLOCKS = {:?}", result.len());
+                println!("BLOCK LEN = {:?}", result[0].len());
 
                 let mut res_new: Vec<Vec<Vec<u8>>> = Vec::new();
                 for y in result {
-                    let chnk = y
-                        .chunks(64)
-                        .map(|chunk| chunk.to_vec())
-                        .collect::<Vec<_>>();
+                    let chnk = y.chunks(64).map(|chunk| chunk.to_vec()).collect::<Vec<_>>();
                     res_new.push(chnk);
                 }
                 let mut str_vec: Vec<BlockWord> = Vec::new();
                 for y in res_new {
                     for x in y {
-                        let bin_str = x
-                            .iter()
-                            .map(|&b| b.to_string())
-                            .collect::<String>();
+                        let bin_str = x.iter().map(|&b| b.to_string()).collect::<String>();
                         let bin_num = u64::from_str_radix(&bin_str, 2).unwrap();
                         // let num = format!("0b{:064b}", bin_num);
-                        //println!("num ={:?}", bin_num);
                         str_vec.push(BlockWord(Value::known(bin_num)));
                     }
                 }
@@ -1169,43 +1184,39 @@ mod tests {
 
                 let mut initial_state = compression.initialize_with_iv(&mut layouter, IV)?;
 
-                let mut intermidiate_state_u64:Vec<Value<u64>>=(0..8).map(|i| Value::known(IV[i])).collect();
-
+                let mut intermidiate_state_u64: Vec<Value<u64>> =
+                    (0..8).map(|i| Value::known(IV[i])).collect();
 
                 for (i, data) in input.iter().enumerate() {
-                    let (_, w_halves) = config.message_schedule.process(
-                        &mut layouter,
-                        data[0..16].try_into().unwrap()
-                    )?;
+                    let (_, w_halves) = config
+                        .message_schedule
+                        .process(&mut layouter, data[0..16].try_into().unwrap())?;
                     if i == 0 {
-                         initial_state = compression.initialize_with_iv(&mut layouter, IV)?;
+                        initial_state = compression.initialize_with_iv(&mut layouter, IV)?;
                     } else {
-                           initial_state = compression.initialize_with_interimidiate_state(
+                        initial_state = compression.initialize_with_interimidiate_state(
                             &mut layouter,
-                            intermidiate_state_u64.clone()
+                            &intermidiate_state_u64,
                         )?;
                     }
 
                     let state = config.compression.compress(
                         &mut layouter,
                         initial_state.clone(),
-                        w_halves
+                        w_halves,
                     )?;
 
                     let digest = config.compression.digest(&mut layouter, state.clone())?;
-                     intermidiate_state_u64 = (0..8)
-                        .map(|i: usize| { digest[i].0.add(intermidiate_state_u64[i]) })
+                    intermidiate_state_u64 = (0..8)
+                        .map(|i: usize| digest[i].0.add(intermidiate_state_u64[i]))
                         .collect::<Vec<_>>();
-
-
-        
                 }
 
-                let final_digest=compression.initialize_with_interimidiate_state(
-                    &mut layouter,
-                    intermidiate_state_u64.clone()
-                )?;
-                let final_digest=config.compression.digest(&mut layouter, final_digest.clone())?;
+                let final_digest = compression
+                    .initialize_with_interimidiate_state(&mut layouter, &intermidiate_state_u64)?;
+                let final_digest = config
+                    .compression
+                    .digest(&mut layouter, final_digest.clone())?;
 
                 println!("----------FINAL DIGEST----------");
                 println!("{:?}", final_digest);

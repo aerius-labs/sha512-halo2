@@ -1,14 +1,14 @@
-use std::convert::TryInto;
-use std::marker::PhantomData;
 use super::Sha512Instructions;
 use halo2_proofs::{
     circuit::{AssignedCell, Chip, Layouter, Region, Value},
     halo2curves::bn256,
     plonk::{Advice, Any, Assigned, Column, ConstraintSystem, Error},
 };
+use std::convert::TryInto;
+use std::marker::PhantomData;
 
 mod compression;
-use compression:: CompressionConfig;
+use compression::CompressionConfig;
 mod gates;
 mod message_schedule;
 mod spread_table;
@@ -122,6 +122,14 @@ pub const IV: [u64; STATE] = [
 /// A word in a `Table16` message block.
 // TODO: Make the internals of this struct private.
 pub struct BlockWord(pub Value<u64>);
+pub trait ToValue {
+    fn to_value(&self) -> Value<u64>;
+}
+impl ToValue for BlockWord {
+    fn to_value(&self) -> Value<u64> {
+        self.0
+    }
+}
 
 #[derive(Clone, Debug)]
 /// Little-endian bits (up to 64 bits)
@@ -439,19 +447,17 @@ impl Sha512Instructions<bn256::Fr> for Table16Chip {
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
     ) -> Result<State, Error> {
-        println!("RUNNING initialization_vector FUNCTION");
         self.config().compression.initialize_with_iv(layouter, IV)
     }
 
     fn initialization(
         &self,
         layouter: &mut impl Layouter<bn256::Fr>,
-        init_state: &Self::State,
+        init_state: &[Value<u64>],
     ) -> Result<Self::State, Error> {
-        println!("RUNNING INITIALIZATION");               
         self.config()
             .compression
-            .initialize_with_state(layouter, init_state.clone())
+            .initialize_with_interimidiate_state(layouter, init_state)
     }
 
     // Given an initialized state and an input message block, compress the
